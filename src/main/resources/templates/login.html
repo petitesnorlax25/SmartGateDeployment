@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGate - Log in</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+   	<link rel="stylesheet" href="/css/output.css">
+    <link rel="stylesheet" href="/css/sweetalert2.min.css">
+	<script src="/js/sweetalert2.min.js"></script>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/popper.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/jquery-3.6.0.js"></script>
+	<script src="/js/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.14/lottie.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            400: '#4fd1c5',
+                            500: '#38b2ac',
+                            600: '#319795',
+                        },
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .theme-toggle-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #4a5568;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .theme-toggle-container .slider {
+            position: absolute;
+            top: 0.1rem;
+            left: 0.1rem;
+            width: 1.3rem;
+            height: 1.3rem;
+            background-color: #fff;
+            border-radius: 9999px;
+            transition: transform 0.3s ease;
+        }
+        .theme-toggle-container .sun,
+        .theme-toggle-container .moon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            transition: opacity 0.3s ease;
+        }
+        .theme-toggle-container .sun {
+            left: 0.4rem;
+            color: #f6e05e;
+            opacity: 1;
+        }
+        .theme-toggle-container .moon {
+            right: 0.4rem;
+            color: #a0aec0;
+            opacity: 0;
+        }
+        .dark .theme-toggle-container {
+            background-color: #2d3748;
+        }
+        .dark .theme-toggle-container .slider {
+            transform: translateX(1.5rem);
+        }
+        .dark .theme-toggle-container .sun {
+            opacity: 0;
+        }
+        .dark .theme-toggle-container .moon {
+            opacity: 1;
+        }
+        .theme-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            transition: width 0.5s ease;
+            z-index: 9999;
+        }
+        .theme-transition.active {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 min-h-screen flex items-center justify-center font-poppins">
+    <div class="theme-transition"></div>
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row bg-white dark:bg-gray-900 rounded-lg shadow-2xl overflow-hidden max-w-6xl mx-auto">
+            <div class="w-full md:w-1/2 p-12 flex flex-col justify-center">
+                <h2 class="text-4xl font-bold mb-6 text-teal-600 dark:text-teal-400 font-poppins tracking-wide leading-tight">Welcome to SmartGate</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8">Log in to access your SmartGate account and continue your journey.</p>
+                <div id="tech-animation" class="w-full h-64"></div>
+            </div>
+            <div class="w-full md:w-1/2 p-12 bg-gray-50 dark:bg-gray-800">
+                <h2 class="text-3xl font-bold mb-8 text-center text-teal-600 dark:text-teal-400">LOGIN</h2>
+                <form th:action="@{/signIn}" method="post" class="space-y-6">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </span>
+                            <input type="text" id="username" name="username" placeholder="Enter your username" oninput="checkUsername()" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:border-teal-500 text-gray-700 dark:text-white">
+                        </div>
+                        <div id="usernameError" class="error mt-1 text-red-500 text-sm"></div>
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </span>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" oninput="validatePassword()" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:border-teal-500 text-gray-700 dark:text-white">
+                        </div>
+                        <div id="passwordError" class="error mt-1 text-red-500 text-sm"></div>
+                    </div>
+                    <button type="submit" id="submitButton" class="w-full bg-teal-500 text-white text-lg font-semibold py-3 rounded-lg hover:bg-teal-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                        LOGIN
+                    </button>
+                    <div th:if="${credentialsError}" id="credentialsError" class="text-red-500 text-center" th:text="${credentialsError}"></div>
+                    <div class="flex justify-between items-center mt-6 text-sm">
+                        <span>Don't have an account? <a th:href="@{/register}" class="text-teal-600 dark:text-teal-400 hover:underline">Register</a></span>
+                        <a href="forgot-password.html" class="text-teal-600 dark:text-teal-400 hover:underline">Forgot Password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="theme-toggle" class="theme-toggle-container">
+        <div class="slider"></div>
+        <i class="fas fa-sun sun"></i>
+        <i class="fas fa-moon moon"></i>
+    </div>
+   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleButton = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        const slider = document.querySelector('.slider');
+        const themeTransition = document.querySelector('.theme-transition');
+
+        // Function to set the theme
+        function setTheme(isDark) {
+            themeTransition.style.backgroundColor = isDark ? '#1a202c' : '#ffffff';
+            themeTransition.classList.add('active');
+            setTimeout(() => {
+                if (isDark) {
+                    htmlElement.classList.add('dark');
+                    slider.style.transform = 'translateX(1.5rem)';
+                } else {
+                    htmlElement.classList.remove('dark');
+                    slider.style.transform = 'translateX(0)';
+                }
+                setTimeout(() => {
+                    themeTransition.classList.remove('active');
+                }, 500);
+            }, 250);
+        }
+
+        // Check localStorage for theme preference on page load
+        if (localStorage.getItem('theme') === 'dark') {
+            setTheme(true);
+        } else if (localStorage.getItem('theme') === 'light') {
+            setTheme(false);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setTheme(true);
+        }
+
+        toggleButton.addEventListener('click', () => {
+            const isDark = !htmlElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            setTheme(isDark);
+        });
+
+        // Retrieve the alert message from the URL parameter
+        const params = new URLSearchParams(window.location.search);
+        const unauthorizedAccess = params.get('unauthorizedAccess');
+        const errorMessage = params.get('errorMessage');
+
+        // Display the alert if a message is provided
+        if (unauthorizedAccess) {
+            Swal.fire({
+                title: 'Unauthorized Access',
+                text: unauthorizedAccess,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Clear the URL parameter
+                params.delete('unauthorizedAccess');
+                window.history.replaceState(null, null, window.location.pathname + '?' + params.toString());
+            });
+        }
+
+        if (errorMessage) {
+            Swal.fire({
+                title: 'Error',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Clear the URL parameter
+                params.delete('errorMessage');
+                window.history.replaceState(null, null, window.location.pathname + '?' + params.toString());
+            });
+        }
+
+        // Load and play the tech animation
+        const animation = lottie.loadAnimation({
+            container: document.getElementById('tech-animation'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json' // You can change this to any tech-related animation JSON
+        });
+    });
+</script>
+
+</body>
+</html>

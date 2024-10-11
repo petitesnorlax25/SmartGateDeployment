@@ -1,0 +1,246 @@
+
+        /* Custom Styles */
+        .sidebar {
+            transition: width 0.3s ease-in-out;
+            width: 256px;
+            background-color: #1F2937;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+                 position: sticky;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar.minimized {
+            width: 64px;
+        }
+
+        .sidebar-nav-item {
+            position: relative;
+        }
+
+        .sidebar-nav-item span {
+            transition: opacity 0.3s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .sidebar.expanded .sidebar-nav-item span {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar.minimized .sidebar-nav-item span {
+            opacity: 0;
+            visibility: hidden;
+        }
+		/* Add this to your existing CSS */
+		.sidebar.expanded .tooltip {
+		    display: none; /* Hide tooltips when sidebar is expanded */
+		}
+        .sidebar-nav-item .tooltip {
+            opacity: 0;
+            visibility: hidden;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateX(10px) translateY(-50%);
+            background-color: #6B7280;
+            color: #FFFFFF;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            white-space: nowrap;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 10;
+            width: max-content;
+        }
+
+        .sidebar.minimized .sidebar-nav-item:hover .tooltip,
+        .sidebar.minimized .toggle-bar:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .footer-text-full {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar.minimized .footer-text-full {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .sidebar.minimized .footer-text-collapsed {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .logo-border {
+            border-bottom: 1px solid #374151;
+        }
+
+        .footer-border {
+            border-top: 1px solid #374151;
+        }
+
+        .toggle-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease-in-out;
+            padding: 0.5rem;
+            margin: 0.5rem;
+            border-radius: 0.375rem;
+            background-color: #374151;
+            position: relative;
+        }
+
+        .toggle-bar .tooltip {
+            opacity: 0;
+            visibility: hidden;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateX(10px) translateY(-50%);
+            background-color: #6B7280;
+            color: #FFFFFF;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            white-space: nowrap;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 10;
+            width: max-content;
+        }
+
+        .sidebar.minimized .toggle-bar:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .toggle-icon {
+            font-size: 1.5rem;
+            /* Adjust if needed */
+        }
+
+        .sidebar.minimized .toggle-icon {
+            font-size: 1.75rem;
+            /* Adjust if needed */
+        }
+
+        .toggle-bar span {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar.minimized .toggle-bar span {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .sidebar.expanded .toggle-bar span {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+      /* Adjust dropdown menu position and animation */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: -30px; /* Shift the dropdown further to the right */
+    top: 100%; /* Ensure it's aligned with the bottom of the button */
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 20;
+    opacity: 0;
+    transform: translateY(-10px); /* Slide up position */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0); /* Slide down to original position */
+}
+
+.dropdown-menu.hide {
+    opacity: 0;
+    transform: translateY(-10px); /* Slide up when hiding */
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+    background-color: #f3f4f6;
+}
+
+/* Tooltip for dropdown icons */
+.dropdown-menu a .tooltip,
+.dropdown-menu button .tooltip {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    right: 100%; /* Position tooltip on the left side */
+    top: 50%;
+    transform: translateX(-10px) translateY(-50%); /* Adjust the position slightly */
+    background-color: #6B7280;
+    color: #FFFFFF;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    white-space: nowrap;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 30; /* Ensure it's above other elements */
+    width: max-content;
+}
+
+/* Show tooltip on hover */
+.dropdown-menu a:hover .tooltip,
+.dropdown-menu button:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+      
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+
+    @keyframes blink-caret {
+        from, to { border-color: transparent; }
+        50% { border-color: gray; }
+    }
+
+    .typing-text {
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        animation: typing 2s steps(30, end) 1s 1 normal both, blink-caret 0.75s step-end infinite;
+    }
+    .glow-animation {
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 1);
+    }
+}
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+	    body, .highcharts-container {
+	        font-family: 'Poppins', sans-serif !important;
+	    }
+    

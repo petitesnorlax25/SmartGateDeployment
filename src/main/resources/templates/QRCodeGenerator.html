@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode@2.0.6/minified/html5-qrcode.min.js"></script>
+        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+
+<h2>QR Code Scanner</h2>
+
+<div id="qr-result"></div>
+<button onclick="startQRScanner()">Start Camera</button>
+<form th:action="@{/visitors/visitorAccess" method="post" id="qrForm">
+	<input type="hidden" name="qrCode" id="qrCode" value="">
+</form>
+<script>
+    let html5QrCode;
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Display the scanned text
+        document.getElementById("qr-result").innerHTML = `<strong>Scanned QR Code:</strong> ${decodedText}`;
+
+        
+        // Stop the scanning
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                console.log("QR scanning stopped.");
+            }).catch(err => {
+                console.error("Error stopping the scanner: ", err);
+            });
+        }
+          document.getElementById("qrCode").value = decodedText;
+        document.getElementById("qrForm").submit();  /
+    }
+
+    function onScanFailure(error) {
+        // Log errors for debugging (optional)
+        console.warn(`Code scan error: ${error}`);
+    }
+
+    function startQRScanner() {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrCode.start(
+            { facingMode: "environment" },  // Use "user" for front camera
+            {
+                fps: 5,  // Lower FPS to help the camera focus better
+                qrbox: { width: 250, height: 250 }  // Adjust QR scanning box size
+            },
+            onScanSuccess,
+            onScanFailure
+        ).catch(err => {
+            console.error(`Error starting QR scanner: ${err}`);
+        });
+    }
+</script>
+
+</body>
+</html>

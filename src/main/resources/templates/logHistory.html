@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartGate Logs History</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="/src/output.css">
+    <link rel="stylesheet" href="/css/logHistory.css">
+    <link rel="stylesheet" href="/css/sweetalert2.min.css">
+	<script src="/js/sweetalert2.min.js"></script>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/popper.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/jquery-3.6.0.js"></script>
+	<script src="/js/jquery-3.6.0.min.js"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+     <link rel="icon" type="image/png" href="/image/ahe.png">
+</head>
+
+<body class="flex flex-col h-screen bg-gray-00 animate-fade-in">
+    
+
+    <!-- Wrapper for Sidebar and Top Bar -->
+    <div class="flex animate-fade-in-delay">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar bg-gray-800 text-white flex flex-col animate-fade-in">
+            <div class="p-4 flex items-center justify-between sidebar-logo logo-border relative">
+                <div class="flex items-center">
+                    <img src="/image/ahe.png" alt="Logo" class="h-8 w-8 mr-2">
+                    <span class="font-bold text-lg hidden sidebar-expanded">SMARTGATE</span>
+                </div>
+            </div>
+			<a th:href="@{/getProfile}" class="flex items-center mt-6 px-4 space-x-3 pb-4 hover:bg-gray-700 rounded transition duration-300">
+			               <img src="/image/pader.jpg" alt="User Profile" class="h-12 w-12 rounded-full cursor-pointer">
+			               <div class="profile-info">
+			                  <p class="font-semibold hidden sidebar-expanded" th:text="${session.currentUser.fullname}"></p>
+			                   <p class="text-sm text-gray-400 hidden sidebar-expanded" th:text="${session.currentUser.userType}"></p>
+			               </div>
+			           </a>
+            <nav class="flex-1 mt-10 space-y-2 px-4">
+                <a th:href="@{/getDashboard}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+                    <i class="fas fa-tachometer-alt mr-3"></i><span>DASHBOARDS</span>
+                    <span class="tooltip">DASHBOARDS</span>
+                </a>
+                <a th:if="${session.currentUser.userType != 'departmenthead' && session.currentUser.userType != 'guard'}" th:href="@{/getUsers}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+                    <i class="fas fa-users mr-3"></i><span>USER MANAGEMENT</span>
+                    <span class="tooltip">USERS</span>
+                </a>
+                <a th:if="${session.currentUser.userType != 'departmenthead'}" th:href="@{/smartgate}"
+                    class="sidebar-nav-item flex items-center p-2 text-white  hover:bg-gray-700 rounded group">
+                    <i class="fas fa-door-open mr-3"></i><span>SMARTGATE</span>
+                    <span class="tooltip">SMARTGATE</span>
+                </a>
+            
+                <a th:if="${session.currentUser.userType != 'guard'}" th:href="@{/getStudents}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+                    <i class="fas fa-list mr-3"></i><span>STUDENT LIST</span>
+                    <span class="tooltip">STUDENT LIST</span>
+                </a>
+		
+				<a th:if="${session.currentUser.userType != 'departmenthead'}" th:href="@{/getVisitors}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+								                   <i class="fas fa-list mr-3"></i><span>VISITORS LIST</span>
+								                   <span class="tooltip">VISITORS LIST</span>
+								               </a>
+                <div class="sidebar-nav-item">
+                    <a href="#" class="flex items-center p-2 text-white hover:bg-gray-700 rounded group" onclick="toggleHistorySubmenu(event)">
+                        <i class="fas fa-history mr-3"></i><span>HISTORY</span>
+                        <i class="fas fa-chevron-down ml-auto transition-transform duration-300" id="historyChevron"></i>
+                        <span class="tooltip">HISTORY</span>
+                    </a>
+                    <div id="historySubmenu" class="pl-8 transition-all duration-300 overflow-hidden hidden">
+						<form th:action="@{/getStudentLogs}" method="post">
+                        <button th:if="${session.currentUser.userType != 'guard'}"  class="block p-2 text-white   relative group">
+                            <i class="fas fa-user-graduate mr-2"></i><span class="submenu-text">Student Log</span>
+                        </button>
+						</form>
+						<form th:action="@{/getVisitorLogs}" method="post">
+                        <button th:if="${session.currentUser.userType != 'departmenthead'}" class="block p-2 text-white bg-purple-600 rounded relative group">
+                            <i class="fas fa-user-tie mr-2"></i><span class="submenu-text">Visitors Log</span>
+                        </button>
+						</form>
+                    </div>
+                </div>
+                <a href="#" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+                    <i class="fas fa-info-circle mr-3"></i><span>ABOUT US</span>
+                    <span class="tooltip">ABOUT US</span>
+                </a>
+               <div id="hasNotif" style="display: none;">
+				    <a href="#" class="sidebar-nav-item flex items-center p-1 text-white hover:bg-gray-700 rounded-lg transition duration-300 glow-animation">
+				    
+				        <form th:action="@{/getSecurityAlerts}" method="get">
+				            <button class="block p-2 rounded-lg relative group transition duration-300 ">
+				            <i class="fas fa-bell mr-2 text-lg"></i>
+				            <span class="font-bold text-md">SECURITY ALERT</span>
+				            <span class="tooltip">SECURITY ALERT</span>
+				            <input type="hidden" name="notif" value="hasNotif">
+				            </button>
+				            <div id="notifText" class="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-3 py-1 font-bold">!</div>
+				       </form>
+				    
+				</a>
+				</div>
+				<div id="noNotif">
+                <a href="#" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+					
+						<form th:action="@{/getSecurityAlerts}" method="get">
+							<button class="block p-2 text-white hover:bg-gray-700 rounded relative group">
+		                    <i class="fas fa-bell mr-3"></i><span>SECURITY ALERT</span>
+		                    <span class="tooltip">SECURITY ALERT</span>
+		                    <input type="hidden" name="notif" value="notif">
+		                    </button>
+		               </form>
+                    
+                </a>
+                </div>
+            </nav>
+            <!-- Toggle Button -->
+            <button id="sidebar-toggle" class="toggle-bar focus:outline-none relative flex items-center justify-center">
+                <i class="fas fa-toggle-on toggle-icon"></i>
+                <span class="ml-2">Toggle Sidebar</span>
+                <span class="tooltip">Toggle Sidebar</span>
+            </button>
+            <!-- Footer Section -->
+            <div class="mt-auto p-4 text-center footer-border">
+                <p class="footer-text-full text-gray-500 text-sm">&copy; 2024 TagoyGroup. All rights reserved.</p>
+                <p class="footer-text-collapsed text-gray-500 text-sm hidden">&copy; 2024</p>
+            </div>
+        </div>
+
+        <div id="main-content" class="flex-1 mb-0 animate-fade-in ">
+            <div
+                class="top-bar bg-white border-b border-gray-300 ml-10 mr-10 shadow-md flex items-center justify-between p-4 min-h-[64px]">
+                <!-- Dashboard Text -->
+                <div class="relative overflow-hidden w-max">
+                    <span class="text-lg font-extrabold text-gray-900 border-r-4 border-gray-900 pr-2 whitespace-nowrap typing-text">
+                        SMARTGATE
+                    </span>
+                </div>
+                
+                
+			<div class="relative ">
+			    <button id="power-button" class="icon-button text-gray-600 hover:text-gray-800">
+			        <i class="fas fa-power-off text-2xl"></i>
+			    </button>
+			
+			    <div id="dropdown-menu" class="dropdown-menu">
+			        <form th:action="@{/manualOpenClose}" method="post">
+			            <button type="submit" name="command" value="open" class="flex items-center p-2 text-gray-700 hover:bg-gray-100 relative">
+			                <i class="fas fa-door-open text-2xl text-green-600 mr-2"></i>
+			                 
+			                <span class="tooltip">Open Gate</span>
+			            </button>
+			            <button type="submit" id="closedBut" name="command" value="close" class="flex items-center p-2 text-gray-700 hover:bg-gray-100 relative">
+			                <i class="fas fa-door-closed text-2xl text-red-600 mr-2"></i>
+			                
+			                <span class="tooltip">Close Gate</span>
+			            </button>
+			        </form>
+			        <a th:href="@{/logout}"  class="flex items-center p-2 text-gray-700 hover:bg-gray-100 relative">
+			            <i class="fas fa-sign-out-alt text-2xl text-blue-600 mr-2"></i>
+			           
+			            <span class="tooltip">Log Out</span>
+			        </a>
+			    </div>
+			</div>
+            </div>
+
+
+
+    <div class="min-h-full">
+        <div class="py-10">
+            <main>
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div class="px-4 py-8 sm:px-0">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                            <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
+                                <div th:if="${getLog == 'visitors'}" class="space-y-6">
+                                    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Visitors Logs</h1>
+                                    <div class="relative">
+                                        <input type="text" id="searchInput" placeholder="Search logs..." class="pl-10 pr-4 py-2 w-full border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <div class="absolute left-3 top-2">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitor Name</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Code</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Log Type</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200" id="logsTable">
+                                                <tr th:each="log, iterStat : ${logs}" class="log-row" th:id="'log-' + ${iterStat.index}">
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.visitors.firstname + ' ' + log.visitors.lastname}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.visitors.email}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.visitors.address}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${#dates.format(log.date, 'yyyy-MM-dd')}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.time}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.visitors.registrationCode}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span th:if="${log.logType == 1}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Entry</span>
+                                                        <span th:if="${log.logType != 1}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Exit</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div th:if="${getLog == 'students'}" class="space-y-6">
+                                    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Students Logs</h1>
+                                    <div class="relative">
+                                        <input type="text" id="searchInput" placeholder="Search logs..." class="pl-10 pr-4 py-2 w-full border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <div class="absolute left-3 top-2">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CourseYearSection</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RFID</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Log Type</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200" id="logsTable">
+                                                <tr th:each="log, iterStat : ${logs}" class="log-row" th:id="'log-' + ${iterStat.index}">
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.students.firstname + ' ' + log.students.middlename + ' ' + log.students.lastname}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.students.programCode + ' ' + log.students.yearLevel + ' ' + log.students.section}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${#dates.format(log.date, 'yyyy-MM-dd')}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.time}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap" th:text="${log.students.rfid}"></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span th:if="${log.logType == 1}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Entry</span>
+                                                        <span th:if="${log.logType != 1}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Exit</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+					$(document).ready(function (){
+				 function fetchNotif() {
+        $.ajax({
+            url: '/getNotifications',
+            method: 'GET',
+            success: function(data) {
+                var hasNotif = data.hasNotif;
+
+            // Log or update the UI with the notification status
+            console.log("Has Notif Value: ", hasNotif);
+
+            if (hasNotif > 0) {
+                $('#hasNotif').css('display', 'block'); // Show the hasNotif div
+                $('#noNotif').css('display', 'none');   // Hide the noNotif div
+                $('#notifText').text(hasNotif);
+            } else {
+                $('#hasNotif').css('display', 'none');  // Hide the hasNotif div
+                $('#noNotif').css('display', 'block');  // Show the noNotif div
+            }
+            },
+            error: function(error) {
+                console.log("errorrrr");
+            }
+        });
+    }
+  
+		fetchNotif()
+
+
+        setInterval(fetchNotif, 5000);
+			});
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('sidebar');
+                var topBar = document.querySelector('.top-bar');
+                var mainContent = document.getElementById('main-content');
+                var footerTextFull = document.querySelector('.footer-text-full');
+                var footerTextCollapsed = document.querySelector('.footer-text-collapsed');
+                var dropdownMenu = document.getElementById('dropdown-menu');
+                var powerButton = document.getElementById('power-button');
+        
+                // Function to update layout based on sidebar state
+                function updateLayout() {
+                    const savedState = localStorage.getItem('sidebarState');
+                    if (savedState === 'minimized') {
+                        sidebar.classList.add('minimized');
+                        sidebar.classList.remove('expanded');
+                        footerTextFull.classList.add('hidden');
+                        footerTextCollapsed.classList.remove('hidden');
+                    } else {
+                        sidebar.classList.remove('minimized');
+                        sidebar.classList.add('expanded');
+                        footerTextFull.classList.remove('hidden');
+                        footerTextCollapsed.classList.add('hidden');
+                    }
+        
+                    // Update other elements based on sidebar state
+                    document.querySelectorAll('.sidebar-expanded').forEach(el => el.classList.toggle('hidden', sidebar.classList.contains('minimized')));
+                    document.querySelectorAll('.sidebar-collapsed').forEach(el => el.classList.toggle('hidden', !sidebar.classList.contains('minimized')));
+                    document.querySelectorAll('.toggle-bar span').forEach(el => el.classList.toggle('hidden', sidebar.classList.contains('minimized')));
+                    topBar.classList.toggle('minimized', sidebar.classList.contains('minimized'));
+                    mainContent.classList.toggle('minimized', sidebar.classList.contains('minimized'));
+        
+                    // Ensure dropdown menu is hidden by default
+                    dropdownMenu.classList.remove('show');
+                    dropdownMenu.classList.add('hide');
+                    dropdownMenu.style.display = 'none';
+                }
+        
+                // Call updateLayout on page load
+                updateLayout();
+        
+                // Save sidebar state
+                function saveSidebarState() {
+                    const isMinimized = sidebar.classList.contains('minimized');
+                    localStorage.setItem('sidebarState', isMinimized ? 'minimized' : 'expanded');
+                }
+        
+                // Toggle Sidebar
+                document.getElementById('sidebar-toggle').addEventListener('click', function () {
+                    sidebar.classList.toggle('minimized');
+                    sidebar.classList.toggle('expanded');
+                    saveSidebarState();
+                    updateLayout();
+                });
+        
+                // Power button dropdown functionality
+                powerButton.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                    dropdownMenu.classList.toggle('hide');
+                    dropdownMenu.style.display = dropdownMenu.classList.contains('show') ? 'block' : 'none';
+                });
+        
+                // Optional: Close dropdown if clicked outside
+                document.addEventListener('click', function (event) {
+                    if (!powerButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.add('hide');
+                        dropdownMenu.classList.remove('show');
+                        dropdownMenu.style.display = 'none';
+                    }
+                });
+        
+                // Toggle button functionality
+                const button = document.getElementById('toggle-button');
+                const circle = document.getElementById('toggle-circle');
+                const onText = document.getElementById('on-text');
+                const offText = button.querySelector('span.text-gray-700');
+        
+                // Load saved state from localStorage
+                const isOn = localStorage.getItem('toggleState') === 'on';
+                if (isOn) {
+                    button.classList.add('bg-purple-400');
+                    circle.classList.add('translate-x-6');
+                    onText.classList.remove('hidden');
+                    offText.classList.add('hidden');
+                }
+        
+                button.addEventListener('click', () => {
+                    const isOn = button.classList.toggle('bg-purple-400');
+                    circle.classList.toggle('translate-x-6');
+                    onText.classList.toggle('hidden');
+                    offText.classList.toggle('hidden');
+                    localStorage.setItem('toggleState', isOn ? 'on' : 'off');
+                });
+            });
+        
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            var query = this.value.toLowerCase();
+            var rows = document.querySelectorAll('.log-row');
+
+            rows.forEach(function(row) {
+                var cells = row.getElementsByTagName('td');
+                var match = false;
+
+                for (var i = 0; i < cells.length; i++) {
+                    if (cells[i].textContent.toLowerCase().indexOf(query) > -1) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                row.style.display = match ? '' : 'none';
+            });
+        });
+          function toggleHistorySubmenu(event) {
+        event.preventDefault();
+        const submenu = document.getElementById('historySubmenu');
+        const chevron = document.getElementById('historyChevron');
+        const sidebar = document.getElementById('sidebar');
+
+        submenu.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+
+        if (sidebar.classList.contains('minimized')) {
+            submenu.style.position = 'absolute';
+            submenu.style.left = '100%';
+            submenu.style.top = '0';
+            submenu.style.width = '200px';
+            submenu.style.backgroundColor = '#1F2937';
+            submenu.style.boxShadow = '2px 0 5px rgba(0,0,0,0.1)';
+            submenu.style.zIndex = '1000';
+            submenu.style.display = submenu.classList.contains('hidden') ? 'none' : 'block';
+
+            const submenuItems = submenu.querySelectorAll('a');
+            submenuItems.forEach(item => {
+                item.classList.add('flex', 'items-center');
+                item.classList.remove('block');
+                item.style.padding = '0.5rem';
+                item.style.whiteSpace = 'nowrap';
+
+                const span = item.querySelector('.submenu-text');
+                if (span) {
+                    span.style.display = 'inline';
+                    span.style.marginLeft = '0.5rem';
+                    span.style.opacity = '1';
+                    span.style.visibility = 'visible';
+                }
+            });
+
+            const historyItem = document.querySelector('.sidebar-nav-item');
+            historyItem.addEventListener('mouseenter', function() {
+                if (sidebar.classList.contains('minimized') && !submenu.classList.contains('hidden')) {
+                    submenu.style.display = 'block';
+                }
+            });
+            historyItem.addEventListener('mouseleave', function() {
+                if (sidebar.classList.contains('minimized')) {
+                    submenu.style.display = 'none';
+                }
+            });
+        } else {
+            submenu.style.position = 'static';
+            submenu.style.left = 'auto';
+            submenu.style.top = 'auto';
+            submenu.style.width = '100%';
+            submenu.style.backgroundColor = 'transparent';
+            submenu.style.boxShadow = 'none';
+            submenu.style.zIndex = 'auto';
+            submenu.style.display = submenu.classList.contains('hidden') ? 'none' : 'block';
+
+            const submenuItems = submenu.querySelectorAll('a');
+            submenuItems.forEach(item => {
+                item.classList.remove('flex', 'items-center');
+                item.classList.add('block');
+                item.style.padding = '';
+                item.style.whiteSpace = '';
+                const span = item.querySelector('.submenu-text');
+                if (span) {
+                    span.style.display = 'block';
+                    span.style.marginLeft = '';
+                    span.style.opacity = '';
+                    span.style.visibility = '';
+                }
+            });
+        }
+    }
+    document.querySelector('.history-toggle').addEventListener('click', toggleHistorySubmenu);
+    
+
+    </script>
+</body>
+</html>

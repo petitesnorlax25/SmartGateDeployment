@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Registration</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        .cover-image {
+            background-image: url('/images/bcc.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="cover-image"></div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto">
+            <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Welcome to Visitor Registration</h2>
+            <p class="text-gray-600 mb-6 text-center">We're excited to have you here! Please fill out the form below to register as a visitor.</p>
+            <form id="registration-form" class="space-y-4" onsubmit="event.preventDefault(); submitData();">
+                <div>
+                    <label for="firstname" class="block text-sm font-medium text-gray-700">First Name:</label>
+                    <input type="text" id="firstname" name="firstname" class="mt-1 p-2 block w-full border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <div>
+                    <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name:</label>
+                    <input type="text" id="lastname" name="lastname" class="mt-1 p-2 block w-full border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <div>
+                    <label for="address" class="block text-sm font-medium text-gray-700">Address:</label>
+                    <input type="text" id="address" name="address" class="mt-1 p-2 block w-full border rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email:</label>
+                    <input type="email" id="email" name="email" class="mt-1 p-2 block w-full border rounded-md focus:ring-blue-500 focus:border-blue-500" oninput="checkEmail2()" required>
+                    <div id="emailError2" class="text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div>
+                    <label for="image" class="block text-sm font-medium text-gray-700">Upload Your Photo (Optional):</label>
+                    <p class="text-xs text-gray-500 mb-2">This helps us with exit logging. Your privacy is important to us.</p>
+                    <input type="file" id="image" name="image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="previewImage(event)">
+                    <img id="image-preview" src="" alt="Image Preview" class="mt-4 max-w-full h-auto rounded-lg" style="display:none; max-width: 200px; max-height: 200px;">
+                </div>
+
+                <div class="flex justify-center">
+					
+                    <input type="submit" id="registrationButton" value="Register" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">
+                </div>
+                  
+            </form>
+
+        </div>
+    </div>
+
+    <!-- The rest of your modals and scripts remain unchanged -->
+    
+    <!-- Modal -->
+     <div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">QR Code</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="invalidateSession()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+					<h2>PLEASE TAKE A PHOTO AND SAVE YOU QR CODE</h2>
+                    <img th:src="'data:image/png;base64,' + ${session.base64QrImage}" alt="QR Code" />
+					<input type="hidden" id="base64QrImage" value="${base64QrImage}" />
+					 <a id="downloadLink" href="#" download="visitorQRCode.png" class="btn btn-primary">Download QR Code</a>
+ 
+                </div>
+            </div>
+        </div>
+    </div>
+             
+            <div class="modal fade" id="conModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="modal-header bg-blue-500 text-white">
+                <h5 class="modal-title" id="exampleModalLabel">Confirmation Code</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-6">
+                <form th:action="@{/visitors/visitorsRegistration}" method="post" class="space-y-4">
+                    <div id="conCodeDiv" class="space-y-2">
+                        <label for="code" class="block text-sm font-medium text-gray-700">Enter Code:</label>
+                        <input type="text" id="code" name="code" class="mt-1 p-2 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out" required>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <button type="submit" id="modalRecoverButton" class="py-2 px-4 w-full bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                            Confirm
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-4 text-center">
+                    <p id="didntReceiveCodeText" class="text-sm text-gray-500 mb-2">Didn't receive a code?<a></p>
+                    
+                    <form id="resendForm" onsubmit="submitResendCode(event)">
+			
+					    <button type="submit" id="resend-code" class="py-2 px-4 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition duration-150 ease-in-out" disabled>
+                        Resend Code <span id="timer" class="ml-2 text-sm" style="display: none;">5</span>
+                    	</button>
+					</form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="modal fade" id="recoverModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Recover Registration Code</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/visitors/recoverCode}" method="post" class="space-y-4">
+                        <div>
+                            <label for="modalEmail" class="block text-sm font-medium text-gray-700">Email:</label>
+                            <input type="email" id="modalEmail" name="email" class="mt-1 p-2 block w-full border rounded-md focus:ring-blue-500 focus:border-blue-500" oninput="checkEmail()" required>
+                            <div id="emailError" class="text-red-500 text-sm mt-1"></div>
+                        </div>
+                        <div class="flex justify-center">
+                            <button type="submit" id="modalRecoverButton" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                Recover
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="status" th:value="${session.status}">
+
+    <!-- Resend Code Form -->
+    
+
+    <!-- Scripts -->
+  	    <script th:inline="javascript">
+			  
+	/*<![CDATA[*/
+	var qrCodeImage = /*[[${session.base64QrImage}]]*/; 
+	var invalidEmail = /*[[${session.emaill}]]*/;
+	var confirmationCode;
+	var email;
+	console.log("invalid::::"+invalidEmail);
+	setInterval(function() {
+        let qrCodeImg = document.getElementById("qrCodeImg");
+        qrCodeImg.src = qrCodeImg.src.split("?")[0] + "?" + new Date().getTime(); // Prevent caching
+    }, 5000); 
+    document.addEventListener("DOMContentLoaded", function() {
+    // Get the base64 image from the hidden input
+    const base64QrImage = document.getElementById('base64QrImage').value;
+    const downloadLink = document.getElementById('downloadLink');
+    
+    // Set the href of the download link to the base64 data
+    downloadLink.href = `data:image/png;base64,${base64QrImage}`;
+	});
+
+    function showModal() {
+       $('#conModal').modal('show');
+   	}
+    function showQrModal() {
+       $('#qrModal').modal('show');
+    }
+    var status = document.getElementById('status').value;
+    console.log("status status"+status);
+    if (status === "success") {
+		document.getElementById("status").value = "";
+		showQrModal();
+
+	}else{
+		console.log("fai;ed fia;easdasd");
+	}
+ 	function submitData() {
+	    var formData = new FormData();
+	    var fileInput = document.getElementById('imageFile');
+
+    // Append form fields
+	    formData.append("email", document.getElementById('email').value);
+	    formData.append("firstname", document.getElementById('firstname').value);
+	    formData.append("lastname", document.getElementById('lastname').value);
+	    formData.append("address", document.getElementById('address').value);
+        if (fileInput && fileInput.files.length > 0) {
+        	formData.append("image", fileInput.files[0]);  // Append the file if it exists
+	    } else {
+	        formData.append("image", "");  // Append an empty value for the file if none is selected
+	    }
+		var conCodeDiv = document.getElementById('conCodeDiv');
+	    fetch('/visitors/registerGetCode', {
+	        method: 'POST',
+	        body: formData,
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+		
+		confirmationCode = data.confirmationCode;
+	    email = data.email;
+	    
+		console.log("confirmationCode"+confirmationCode+"email : "+email);
+		
+		
+	    if (confirmationCode && email) {
+			sendVerificationCode(email, confirmationCode);
+	    }
+ 
+    	})
+	    .catch(error => {
+	        alert('Error: ' + error);
+	    });
+	}
+	        function checkEmail() {
+	            var email = document.getElementById("modalEmail").value;
+	            var emailError = document.getElementById("emailError");
+				var modalRecoverButton = document.getElementById('modalRecoverButton');
+	            fetch('/visitors/check-email?email=' + email)
+	                .then(response => response.json())
+	                .then(data => {
+	                    if (data) {
+	                        emailError.textContent = "Email has not been registered yet";
+	                        modalRecoverButton.disabled = true;
+	                    } else {
+	                        emailError.textContent = "";
+	                        modalRecoverButton.disabled = false;
+	                    }
+	                });
+	        }
+	        function invalidateSession() {
+				console.log("okokokasdkaskdasdsa");
+	            fetch('/visitors/invalidateSession')
+	                .then(response => response.json())
+	                .then(data => {
+	                    if (data) {
+	                        emailError.textContent = "Email has not been registered yet";
+	                        modalRecoverButton.disabled = true;
+	                    } else {
+	                        emailError.textContent = "";
+	                        modalRecoverButton.disabled = false;
+	                    }
+	                });
+	        }
+	          function checkEmail() {
+	            var email = document.getElementById("modalEmail").value;
+	            var emailError = document.getElementById("emailError");
+				var modalRecoverButton = document.getElementById('modalRecoverButton');
+	            fetch('/visitors/check-email?email=' + email)
+	                .then(response => response.json())
+	                .then(data => {
+	                    if (data) {
+	                        emailError.textContent = "Email has not been registered yet";
+	                        modalRecoverButton.disabled = true;
+	                    } else {
+	                        emailError.textContent = "";
+	                        modalRecoverButton.disabled = false;
+	                    }
+	                });
+	        }
+	        function checkEmail2() {
+	        var email = document.getElementById("email").value;
+	            var emailError = document.getElementById("emailError2");
+				var registrationButton = document.getElementById('registrationButton');
+	            fetch('/visitors/check-email2?email=' + email)
+	                .then(response => response.json())
+	                .then(data => {
+	                    if (data) {
+	                        emailError.textContent = "Email already registered!";
+	                        registrationButton.disabled = true;
+	                    } else {
+	                        emailError.textContent = "";
+	                        registrationButton.disabled = false;
+	                    }
+	                });
+	        }
+
+	        function previewImage(event) {
+	            const image = document.getElementById('image-preview');
+	            image.src = URL.createObjectURL(event.target.files[0]);
+	            image.style.display = 'block';
+	        }
+
+	        emailjs.init("GRi35_90k4gj9Es_f");
+
+	      /*  function getQueryParam(name) {
+	            const urlParams = new URLSearchParams(window.location.search);
+	            return urlParams.get(name);
+	        }};*/
+
+
+	
+	        function startTimer() {
+        var timerElement = document.getElementById('timer');
+        var resendButton = document.getElementById('resend-code');
+        var countdown = 5; // 5 seconds
+
+        timerElement.style.display = 'inline'; // Show timer
+        resendButton.disabled = true;
+
+        var interval = setInterval(function() {
+            countdown--;
+            timerElement.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(interval);
+                resendButton.disabled = false;
+                resendButton.textContent = 'Resend Code';
+                timerElement.style.display = 'none'; // Hide timer after countdown
+            }
+        }, 1000); // Update every second
+    }
+
+
+    function submitResendCode(event) {
+		event.preventDefault();	
+	
+		const resendForm = new URLSearchParams();
+		resendForm.append('registrationCode', confirmationCode);
+		console.log("confirmationCode: "+confirmationCode+"resendEmail"+email);
+		fetch('/visitors/resendCode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: resendForm
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.text();
+            })
+            .then(data => {
+				
+                Swal.fire({
+					toast: true,
+	                position: "center",
+	                icon: "success",
+	                title: "done resending code.",
+	                showConfirmButton: true,
+	            })
+	            if (email && data) {
+					sendVerificationCode(email, data);
+				}
+	            
+            })
+            
+            
+            .catch(error => {
+                Swal.fire({
+					toast: true,
+	                position: "center",
+	                icon: "error",
+	                title: error.message,
+	                showConfirmButton: true,
+	            })
+            });
+	}
+	        
+	function removeQueryParams(params) {
+	    const url = new URL(window.location);
+	    params.forEach(param => url.searchParams.delete(param));
+	    window.history.replaceState({}, document.title, url.toString());
+	}
+	 
+    
+    // Use the QR code image data as needed
+    console.log("QR Code Image Base64 Data:", base64QrImage);
+	function sendVerificationCode(email, confirmationCode) {
+		console.log("qrCodeImage: "+base64QrImage)
+    var params = {
+        sendername: "Tagoy SmartGate",
+        to: email,
+        subject: "Registration Code",
+        replyto: "noreply@example.com",
+        message: `
+            Your registration code is ${confirmationCode}
+        `,
+        // Ensure you send HTML content
+            content_type: "text/html"
+    };
+
+    emailjs.send("service_8jh4949", "template_gr1vonw", params)
+        .then(function(response) {
+            Swal.fire({
+				toast: true,
+                position: "center",
+                icon: "success",
+                title: `Registration code sent to your email. ${confirmationCode}${email}`,
+                showConfirmButton: true,
+            }).then(() => {		
+                document.getElementById('resend-code').style.display = 'block';
+                document.getElementById('timer').style.display = 'block';
+                startTimer();
+                showModal();
+                removeQueryParams(['code', 'email']);
+            });
+        }, function(error) {
+            Swal.fire({
+				toast: true,
+                position: "center",
+                icon: "error",
+                title: "Failed to send registration code.",
+                text: error.text,
+                showConfirmButton: true,
+            }).then(() => {
+                removeQueryParams(['code', 'email']);
+            });
+        });
+}
+
+
+	function sendRecoveryCode(email, recoveryCode) {
+	    var params = {
+	        sendername: "Tagoy SmartGate",
+	        to: email,
+	        subject: "Recover Registration Code",
+	        replyto: "noreply@example.com",
+	        message: "You recovered your registration code: " + recoveryCode,
+	    };
+
+	    emailjs.send("service_8jh4949", "template_gr1vonw", params)
+	        .then(function(response) {
+	            Swal.fire({
+	                position: "center",
+	                icon: "success",
+	                title: "Registration code recovered! Please check your email.",
+	                showConfirmButton: true,
+	            }).then(() => {
+	                removeQueryParams(['code']);
+	            });
+	        }, function(error) {
+	            Swal.fire({
+	                position: "center",
+	                icon: "error",
+	                title: "Failed to recover registration code.",
+	                text: error.text,
+	                showConfirmButton: true,
+	            }).then(() => {
+	                removeQueryParams(['code']);
+	            });
+	        });
+	}
+	 /*]]>*/
+	    </script>
+</body>
+</html>

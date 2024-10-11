@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGate - Register</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.14/lottie.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            400: '#4fd1c5',
+                            500: '#38b2ac',
+                            600: '#319795',
+                        },
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        .theme-toggle-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #4a5568;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .theme-toggle-container .slider {
+            position: absolute;
+            top: 0.1rem;
+            left: 0.1rem;
+            width: 1.3rem;
+            height: 1.3rem;
+            background-color: #fff;
+            border-radius: 9999px;
+            transition: transform 0.3s ease;
+        }
+        .theme-toggle-container .sun,
+        .theme-toggle-container .moon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            transition: opacity 0.3s ease;
+        }
+        .theme-toggle-container .sun {
+            left: 0.4rem;
+            color: #f6e05e;
+            opacity: 1;
+        }
+        .theme-toggle-container .moon {
+            right: 0.4rem;
+            color: #a0aec0;
+            opacity: 0;
+        }
+        .dark .theme-toggle-container {
+            background-color: #2d3748;
+        }
+        .dark .theme-toggle-container .slider {
+            transform: translateX(1.5rem);
+        }
+        .dark .theme-toggle-container .sun {
+            opacity: 0;
+        }
+        .dark .theme-toggle-container .moon {
+            opacity: 1;
+        }
+        .theme-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            transition: width 0.5s ease;
+            z-index: 9999;
+        }
+        .theme-transition.active {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 min-h-screen flex items-center justify-center font-poppins">
+    <div class="theme-transition"></div>
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row bg-white dark:bg-gray-900 rounded-lg shadow-2xl overflow-hidden max-w-6xl mx-auto">
+            <div class="w-full md:w-1/2 p-12 flex flex-col justify-center">
+                <h2 class="text-4xl font-bold mb-6 text-teal-600 dark:text-teal-400 font-poppins tracking-wide leading-tight">Join SmartGate</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8">Create your SmartGate account and start your journey with us.</p>
+                <div id="tech-animation" class="w-full h-64"></div>
+            </div>
+            <div class="w-full md:w-1/2 p-12 bg-gray-50 dark:bg-gray-800">
+                <h2 class="text-3xl font-bold mb-8 text-center text-teal-600 dark:text-teal-400">REGISTER</h2>
+                <form th:action="@{/app/startingpoint/superAdminRegister}" method="post" enctype="multipart/form-data" class="space-y-6">
+                    <div>
+                        <label for="fullname" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Full Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </span>
+                            <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:border-teal-500 text-gray-700 dark:text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </span>
+                            <input type="text" id="username" name="username" placeholder="Choose a username" oninput="checkUsername()" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:border-teal-500 text-gray-700 dark:text-white">
+                        </div>
+                        <div id="usernameError" class="error mt-1 text-red-500 text-sm"></div>
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </span>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" oninput="validatePassword()" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:border-teal-500 text-gray-700 dark:text-white">
+                        </div>
+                        <div id="passwordError" class="error mt-1 text-red-500 text-sm"></div>
+                    </div>
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Confirm Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </span>
+                            <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" oninput="validateConfirmPassword()" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:border-teal-500 text-gray-700 dark:text-white">
+                        </div>
+                        <div id="confirmPasswordError" class="error mt-1 text-red-500 text-sm"></div>
+                    </div>
+                    <img id="defaultImage" class="hidden" src="/images/admin.png" alt="Default Image">
+                    <input type="file" id="fileInput" name="image" class="hidden" accept="image/*">
+                    <button type="submit" id="submitButton" class="w-full bg-teal-500 text-white text-lg font-semibold py-3 rounded-lg hover:bg-teal-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                        Start The App
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="theme-toggle" class="theme-toggle-container">
+        <div class="slider"></div>
+        <i class="fas fa-sun sun"></i>
+        <i class="fas fa-moon moon"></i>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+            const slider = document.querySelector('.slider');
+            const themeTransition = document.querySelector('.theme-transition');
+
+            function setTheme(isDark) {
+                themeTransition.style.backgroundColor = isDark ? '#1a202c' : '#ffffff';
+                themeTransition.classList.add('active');
+                setTimeout(() => {
+                    if (isDark) {
+                        htmlElement.classList.add('dark');
+                        slider.style.transform = 'translateX(1.5rem)';
+                    } else {
+                        htmlElement.classList.remove('dark');
+                        slider.style.transform = 'translateX(0)';
+                    }
+                    setTimeout(() => {
+                        themeTransition.classList.remove('active');
+                    }, 500);
+                }, 250);
+            }
+
+            if (localStorage.getItem('theme') === 'dark') {
+                setTheme(true);
+            } else if (localStorage.getItem('theme') === 'light') {
+                setTheme(false);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                setTheme(true);
+            }
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = !htmlElement.classList.contains('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                setTheme(isDark);
+            });
+
+            // Load and play the tech animation
+            const animation = lottie.loadAnimation({
+                container: document.getElementById('tech-animation'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json'
+            });
+        });
+
+        var submitButton = document.getElementById("submitButton");
+        submitButton.disabled = true;
+        var usernameChecker = 0;
+        var passwordChecker = 0;
+        var passwordsMatch = false;
+
+        function usernameAndPasswordChecker() {
+            if (usernameChecker === 1 && passwordChecker === 1 && passwordsMatch) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+
+        function checkUsername() {
+            var username = document.getElementById("username").value;
+            var usernameError = document.getElementById("usernameError");
+            fetch('/check-username?username=' + username)
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        usernameError.textContent = "Username is already taken.";
+                        usernameChecker = 0;
+                    } else {
+                        usernameError.textContent = "";
+                        usernameChecker = 1;
+                    }
+                    usernameAndPasswordChecker();
+                });
+        }
+
+        function validatePassword() {
+            var password = document.getElementById("password").value;
+            var passwordError = document.getElementById("passwordError");
+            var strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})");
+            var weakRegex = new RegExp("^(?=.{6,})");
+            if (strongRegex.test(password)) {
+                passwordChecker = 1;
+                passwordError.textContent = "Password strength: Strong ✔";
+                passwordError.classList.remove("text-red-500");
+                passwordError.classList.add("text-green-500");
+            } else if (weakRegex.test(password)) {
+                passwordChecker = 0;
+                passwordError.textContent = "Password strength: Weak";
+                passwordError.classList.remove("text-green-500");
+                passwordError.classList.add("text-red-500");
+            } else {
+                passwordChecker = 0;
+                passwordError.textContent = "Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters.";
+                passwordError.classList.remove("text-green-500");
+                passwordError.classList.add("text-red-500");
+            }
+            validateConfirmPassword();
+        }
+
+        function validateConfirmPassword() {
+            var password = document.getElementById("password").value;
+            var confirmPassword = document.getElementById("confirm-password").value;
+            var confirmPasswordError = document.getElementById("confirmPasswordError");
+
+            if (confirmPassword === password) {
+                confirmPasswordError.textContent = "Passwords match ✔";
+                confirmPasswordError.classList.remove("text-red-500");
+                confirmPasswordError.classList.add("text-green-500");
+                passwordsMatch = true;
+            } else {
+                confirmPasswordError.textContent = "Passwords do not match.";
+                confirmPasswordError.classList.remove("text-green-500");
+                confirmPasswordError.classList.add("text-red-500");
+                passwordsMatch = false;
+            }
+            usernameAndPasswordChecker();
+        }
+
+        function setDefaultImage() {
+            const fileInput = document.getElementById('fileInput');
+            const defaultImage = document.getElementById('defaultImage');
+            
+            const url = defaultImage.src;
+
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const file = new File([blob], "default.jpg", { type: blob.type });
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                });
+        }
+
+        // Set the default image when the page loads
+        window.onload = setDefaultImage;
+    </script>
+</body>
+</html>

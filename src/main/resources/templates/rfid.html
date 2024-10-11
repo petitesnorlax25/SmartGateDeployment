@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Reader</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h1>RFID Reader</h1>
+    <form th:action="@{/rfidRegister}" method="post" id="rfidForm" enctype="multipart/form-data">
+        <input type="text" id="username" name="username" placeholder="Username">
+        <input type="password" id="password" name="password" placeholder="Password">
+		<input type="file" name="image" id="image">
+        <input type="text" id="rfid" name="rfid" autofocus placeholder="Scan your RFID card here" onkeyup="getInputValue(event)">
+		
+    </form>
+    <script>
+        function getInputValue(event) {
+            // Check if Enter key was pressed
+            if (event.key === "Enter") {
+                // Get the input elements by their IDs
+                var usernameInput = document.getElementById('username');
+                var passwordInput = document.getElementById('password');
+                var rfidInput = document.getElementById('rfid');
+                
+                // Get the values of the input elements
+                var usernameValue = usernameInput.value.trim();
+                var passwordValue = passwordInput.value.trim();
+                var rfidValue = rfidInput.value.trim();
+                
+                // Check if all inputs are filled
+                if (usernameValue && passwordValue && rfidValue) {
+                    document.getElementById('rfidForm').submit();
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const unauthorizedAccess = params.get('unauthorizedAccess');
+            const errorMessage = params.get('errorMessage');
+
+            if (unauthorizedAccess) {
+                Swal.fire({
+                    title: 'Unauthorized Access',
+                    text: unauthorizedAccess,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    params.delete('unauthorizedAccess');
+                    window.history.replaceState(null, null, window.location.pathname);
+                });
+            }
+
+            if (errorMessage) {
+                Swal.fire({
+                    title: 'Error',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    params.delete('errorMessage');
+                    window.history.replaceState(null, null, window.location.pathname);
+                });
+            }
+        });
+    </script>  
+</body>
+</html>

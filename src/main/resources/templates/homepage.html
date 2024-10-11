@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGate - Bago City College's Intelligent Access System</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.3/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.3/mapbox-gl.css" rel="stylesheet" />
+     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a202c;
+        }
+        /* Example to check if any overlapping elements */
+
+
+        .poppins {
+            font-family: 'Poppins', sans-serif;
+        }
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+     
+    
+    </style>
+    <script>
+        // Function to open the modal
+        function openModal() {
+            document.getElementById('developer-modal').classList.remove('hidden');
+        }
+
+        // Function to close the modal
+        function closeMmodal() {
+            document.getElementById('developer-modal').classList.add('hidden');
+        }
+
+        // Function to check if an element is in viewport
+        function isElementInViewport(el) {
+            var rect = el.getBoundingClientRect();
+            return (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+        }
+
+        // Function to handle scroll animations
+        function handleScrollAnimations() {
+            var elements = document.querySelectorAll('.animate-on-scroll');
+            elements.forEach(function(el) {
+                if (isElementInViewport(el)) {
+                    el.classList.add('is-visible');
+                }
+            });
+        }
+
+        // Add event listener for scroll
+        window.addEventListener('scroll', handleScrollAnimations);
+        window.addEventListener('load', handleScrollAnimations);
+    </script>
+</head>
+
+<body class="text-gray-600 overflow-x-hidden bg-gray-800">
+    <div class="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzExMTgyNyI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiIGZpbGw9IiMyMDJiM2QiPjwvY2lyY2xlPgo8L3N2Zz4=')] opacity-10 z-0"></div>
+    
+    <!-- Animated background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gray-800 opacity-70"></div>
+        <div class="absolute inset-0">
+            <div class="absolute h-48 w-48 sm:h-64 sm:w-64 rounded-full bg-teal-400 blur-3xl opacity-20 animate-pulse" style="top: 10%; left: 20%;"></div>
+            <div class="absolute h-56 w-56 sm:h-72 sm:w-72 rounded-full bg-teal-500 blur-3xl opacity-20 animate-pulse animation-delay-2000" style="top: 60%; left: 70%;"></div>
+            <div class="absolute h-64 w-64 sm:h-80 sm:w-80 rounded-full bg-teal-600 blur-3xl opacity-20 animate-pulse animation-delay-4000" style="top: 80%; left: 30%;"></div>
+        </div>
+    </div>
+    
+    <header class="fixed w-full z-50 bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-lg border-b border-gray-700 opacity-0 transition-opacity duration-1000 ease-in-out">
+        <nav class="container mx-auto px-4 sm:px-6 py-4">
+            <div class="flex flex-wrap justify-between items-center">
+                <a href="#" class="poppins text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600">
+                    SmartGate
+                </a>
+                <div class="hidden md:flex space-x-4 md:space-x-8">
+                    <a href="#about" class="text-gray-300 hover:text-teal-400 transition-colors duration-300">About</a>
+                    <a href="#features" class="text-gray-300 hover:text-teal-400 transition-colors duration-300">Features</a>
+                    <a href="#experience" class="text-gray-300 hover:text-teal-400 transition-colors duration-300">Experience</a>
+                    <a href="#" onclick="openModal()" class="text-gray-300 hover:text-teal-400 transition-colors duration-300">Developers</a>
+                    <a href="#campus" class="text-gray-300 hover:text-teal-400 transition-colors duration-300">Campus</a>
+                </div>
+                <div class="flex flex-wrap space-x-2 md:space-x-4">
+                    <a href="/login" class="bg-teal-500 text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-teal-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-teal-500/50">Login</a>
+                    <a href="/register" class="bg-teal-600 text-white px-4 py-2 rounded-md text-sm sm:text-base hover:bg-teal-500 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-teal-600/50">Register</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="relative z-10">
+        <section class="min-h-screen flex items-center justify-center text-center px-4 sm:px-6 lg:px-8 bg-gray-800 overflow-hidden">
+            <div class="max-w-5xl mx-auto relative">
+                <div class="absolute -top-20 -left-20 w-48 h-48 sm:w-64 sm:h-64 bg-teal-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+                <div class="absolute -bottom-20 -right-20 w-48 h-48 sm:w-64 sm:h-64 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 sm:w-64 sm:h-64 bg-teal-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+                
+                <h1 class="poppins text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 animate-pulse relative z-10 opacity-0 transform translate-y-10 transition-all duration-1000 ease-out">
+                    Welcome to SmartGate
+                </h1>
+                <p class="text-lg sm:text-xl md:text-2xl mb-12 text-gray-300 leading-relaxed relative z-10 opacity-0 transform translate-y-10 transition-all duration-1000 ease-out delay-300">Experience the future of campus security at Bago City College with our Arduino-powered intelligent access system.</p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6 relative z-10 opacity-0 transform translate-y-10 transition-all duration-1000 ease-out delay-600">
+                    <a href="#learn-more" class="group relative px-6 py-3 sm:px-8 sm:py-4 overflow-hidden rounded-md bg-teal-500 text-lg font-semibold text-white shadow-lg shadow-teal-500/30 transition-all duration-300 hover:bg-teal-400 hover:scale-105">
+                        <span class="relative z-10">Discover SmartGate</span>
+                    </a>
+                    <a href="#demo" class="group relative px-6 py-3 sm:px-8 sm:py-4 overflow-hidden rounded-md bg-teal-600 text-lg font-semibold text-white shadow-lg shadow-teal-600/30 transition-all duration-300 hover:bg-teal-500 hover:scale-105">
+                        <span class="relative z-10">See It in Action</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            setTimeout(() => {
+                document.querySelector('header').style.opacity = '1';
+                document.querySelector('h1').style.opacity = '1';
+                document.querySelector('h1').style.transform = 'translateY(0)';
+                document.querySelector('p').style.opacity = '1';
+                document.querySelector('p').style.transform = 'translateY(0)';
+                document.querySelector('.flex.flex-col').style.opacity = '1';
+                document.querySelector('.flex.flex-col').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+<section id="campus" class="min-h-screen py-32 bg-gray-800 overflow-hidden flex items-center justify-center">
+    <div class="container mx-auto px-4">
+        <h2 class="poppins text-7xl font-bold mb-20 text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 animate-on-scroll">
+            Bago City College
+        </h2>
+        <div class="relative">
+            <div class="absolute -top-20 -left-20 w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+            <div class="absolute -bottom-20 -right-20 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+                <div class="relative group animate-on-scroll order-2 md:order-1">
+                    <div class="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                    <img src="/image/he.jpg" alt="Bago City College" class="relative rounded-lg shadow-2xl w-full h-auto">
+                    <div class="absolute bottom-4 left-4 bg-gray-800 p-4 rounded-lg shadow-xl transform -rotate-3">
+                        <p class="text-teal-400 font-semibold">Empowering Education</p>
+                    </div>
+                </div>
+                <div class="space-y-10 animate-on-scroll order-1 md:order-2">
+                    <p class="text-gray-300 text-2xl leading-relaxed">
+                        Bago City College stands as a beacon of educational excellence, embracing innovation and technology to shape the future leaders of tomorrow.
+                    </p>
+                    <p class="text-gray-300 text-2xl leading-relaxed">
+                        With SmartGate, we're not just enhancing security; we're revolutionizing the campus experience, setting new standards in educational technology.
+                    </p>
+                    <button id="showMapBtn" onclick="openMmodal()"class="inline-block px-8 py-4 bg-teal-500 text-white text-lg font-semibold rounded-md hover:bg-teal-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-teal-500/50">
+                        Explore Our Campus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+        <section id="about" class="min-h-screen py-24 bg-gray-800 flex items-center justify-center">
+            <div class="container mx-auto px-4">
+                <h2 class="poppins text-6xl font-bold mb-16 text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 animate-on-scroll">
+                    Revolutionizing Campus Security
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                    <div class="space-y-8 animate-on-scroll">
+                        <p class="text-gray-300 text-xl leading-relaxed">
+                            SmartGate redefines security paradigms, offering an unparalleled fusion of Arduino-powered hardware and cutting-edge software. Designed exclusively for Bago City College, this innovative solution combines advanced access control with real-time communication.
+                        </p>
+                        <p class="text-gray-600 text-xl leading-relaxed">
+                            Our system doesn't just secure; it connects and informs. With instant SMS notifications to parents and state-of-the-art facial recognition for exits, SmartGate creates a perfect synergy of security, transparency, and technological innovation in education.
+                        </p>
+                    </div>
+                    <div class="relative group animate-on-scroll">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-teal-400 to-teal-600 rounded-lg blur opacity-50 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                        <img src="/image/home.jpeg" alt="SmartGate Interface" class="relative rounded-lg shadow-2xl">
+                        <div class="absolute bottom-4 right-4 bg-gray-900 p-4 rounded-lg shadow-xl transform rotate-3">
+                            <p class="text-teal-400 font-semibold">Arduino-Powered Core</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="min-h-screen py-24 bg-gray-900 flex items-center justify-center">
+            <div class="container mx-auto px-4">
+                <h2 class="poppins text-6xl font-bold mb-20 text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 animate-on-scroll">
+                    Cutting-Edge Features
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+                    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl transform transition duration-500 hover:scale-105 group animate-on-scroll">
+                        <div class="bg-blue-500 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                            </svg>
+                        </div>
+                        <h3 class="poppins text-2xl font-semibold mb-4 text-center text-teal-400">Secure RFID Entry</h3>
+                        <p class="text-gray-600 text-center">Utilizing encrypted RFID technology, our next-gen BCC student IDs ensure swift and secure access to the campus.</p>
+                    </div>
+                    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl transform transition duration-500 hover:scale-105 group animate-on-scroll">
+                        <div class="bg-purple-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                            </svg>
+                        </div>
+                        <h3 class="poppins text-2xl font-semibold mb-4 text-center text-teal-400">AI-Powered Exit</h3>
+                        <p class="text-gray-600 text-center">Our advanced facial recognition system provides quick and accurate verification for seamless campus exits.</p>
+                    </div>
+                    <div class="bg-gray-800 p-8 rounded-lg shadow-2xl transform transition duration-500 hover:scale-105 group animate-on-scroll">
+                        <div class="bg-green-500 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 group-hover:animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                        <h3 class="poppins text-2xl font-semibold mb-4 text-center text-teal-400">Instant Parent Alerts</h3>
+                        <p class="text-gray-600 text-center">Our system sends real-time SMS notifications to parents, keeping them informed about their child's campus activity.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="min-h-screen py-24 bg-gray-800 flex items-center justify-center">
+            <div class="container mx-auto px-4">
+                <h2 class="poppins text-6xl font-bold mb-20 text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 animate-on-scroll">
+                    The SmartGate Experience
+                </h2>
+                <div class="relative">
+                    <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-gradient-to-b from-teal-400 to-teal-600"></div>
+                    <div class="space-y-24">
+                        <div class="flex items-center animate-on-scroll">
+                            <div class="w-1/2 pr-12 text-right">
+                                <h3 class="poppins text-3xl font-semibold mb-4 text-teal-400">Smart Approach</h3>
+                                <p class="text-gray-600">Experience seamless entry with your RFID-enabled student ID, backed by Arduino technology for lightning-fast processing.</p>
+                            </div>
+                            <div class="w-1/2 pl-12">
+                                <div class="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center animate-on-scroll">
+                            <div class="w-1/2 pr-12 text-right">
+                                <div class="bg-yellow-500 w-16 h-16 rounded-full flex items-center justify-center ml-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="w-1/2 pl-12">
+                                <h3 class="poppins text-3xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-500">Intelligent Exit</h3>
+                                <p class="text-gray-600">Leave campus effortlessly with our AI-powered facial recognition system, ensuring quick and accurate verification.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center animate-on-scroll">
+                            <div class="w-1/2 pr-12 text-right">
+                                <h3 class="poppins text-3xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-500">Real-time Updates</h3>
+                                <p class="text-gray-600">Keep parents informed with instant SMS notifications about their child's campus entry and exit times.</p>
+                            </div>
+                            <div class="w-1/2 pl-12">
+                                <div class="bg-pink-500 w-16 h-16 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 py-12 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzExMTgyNyI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiIGZpbGw9IiMyMDJiM2QiPjwvY2lyY2xlPgo8L3N2Zz4=')] opacity-10"></div>
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="flex flex-wrap justify-between items-start">
+                    <div class="w-full md:w-1/3 mb-10 md:mb-0">
+                        <h3 class="poppins text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 mb-4">SmartGate</h3>
+                        <p class="text-gray-600 mb-6">Empowering campus security with intelligent technology.</p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-teal-400 hover:text-teal-300 transition-colors duration-300"><i class="fab fa-facebook-f text-xl"></i></a>
+                            <a href="#" class="text-teal-400 hover:text-teal-300 transition-colors duration-300"><i class="fab fa-twitter text-xl"></i></a>
+                            <a href="#" class="text-teal-400 hover:text-teal-300 transition-colors duration-300"><i class="fab fa-linkedin-in text-xl"></i></a>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3 mb-10 md:mb-0">
+                        <h4 class="poppins text-2xl font-semibold mb-6 text-teal-400">Quick Links</h4>
+                        <ul class="space-y-3">
+                            <li><a href="#about" class="text-gray-600 hover:text-teal-400 transition-colors duration-300 flex items-center"><i class="fas fa-chevron-right mr-2 text-teal-500"></i>About</a></li>
+                            <li><a href="#features" class="text-gray-600 hover:text-teal-400 transition-colors duration-300 flex items-center"><i class="fas fa-chevron-right mr-2 text-teal-500"></i>Features</a></li>
+                            <li><a href="#experience" class="text-gray-600 hover:text-teal-400 transition-colors duration-300 flex items-center"><i class="fas fa-chevron-right mr-2 text-teal-500"></i>Experience</a></li>
+                        </ul>
+                            <li><a href="#about" class="text-gray-600 hover:text-teal-400 transition-colors duration-300 flex items-center"><i class="fas fa-chevron-right mr-2 text-teal-500"></i>About</a></li>
+                            <li><a href="#features" class="text-gray-600 hover:text-teal-400 transition-colors duration-300 flex items-center"><i class="fas fa-chevron-right mr-2 text-teal-500"></i>Features</a></li>
+                            <li><a href="#experience" class="text-gray-600 hover:text-teal-400 transition-colors duration-300 flex items-center"><i class="fas fa-chevron-right mr-2 text-teal-500"></i>Experience</a></li>
+                        </ul>
+                    </div>
+                    <div class="w-full md:w-1/3">
+                        <h4 class="poppins text-2xl font-semibold mb-6 text-teal-400">Contact Us</h4>
+                        <ul class="space-y-3">
+                            <li class="flex items-start"><i class="fas fa-map-marker-alt text-teal-500 mt-1 mr-3"></i><span class="text-gray-600">Bago City College<br/>Bago City, Negros Occidental</span></li>
+                            <li class="flex items-center"><i class="fas fa-envelope text-teal-500 mr-3"></i><a href="mailto:info@smartgate.com" class="text-gray-600 hover:text-teal-400 transition-colors duration-300">info@smartgate.com</a></li>
+                            <li class="flex items-center"><i class="fas fa-phone-alt text-teal-500 mr-3"></i><span class="text-gray-600">+1 (123) 456-7890</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-12 pt-8 border-t border-gray-700 text-center text-gray-600">
+                    <p>&copy; 2023 SmartGate. All rights reserved. | <a href="#" class="hover:text-teal-400 transition-colors duration-300">Privacy Policy</a> | <a href="#" class="hover:text-teal-400 transition-colors duration-300">Terms of Service</a></p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Modal -->
+    <div id="developer-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="bg-black bg-opacity-50 absolute inset-0 backdrop-blur-sm transition-opacity duration-300"></div>
+        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-100 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="orbitron text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">Meet Our Visionary Team</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div class="flex flex-col items-center space-y-4 group">
+                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 group-hover:border-pink-500 transition-colors duration-300">
+                        <img src="/image/pader.jpg" alt="Sigfredo Fernandez" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-xl font-semibold text-gray-200 group-hover:text-purple-400 transition-colors duration-300">Sigfredo Fernandez</span>
+                    <p class="text-gray-400 text-center">Lead Developer</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors duration-300"><i class="fab fa-linkedin text-xl"></i></a>
+                        <a href="#" class="text-pink-400 hover:text-pink-300 transition-colors duration-300"><i class="fab fa-github text-xl"></i></a>
+                        <a href="#" class="text-teal-400 hover:text-teal-300 transition-colors duration-300"><i class="fas fa-globe text-xl"></i></a>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center space-y-4 group">
+                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 group-hover:border-pink-500 transition-colors duration-300">
+                        <img src="/image/pader.jpg" alt="Jed Ramos" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-xl font-semibold text-gray-200 group-hover:text-purple-400 transition-colors duration-300">Jed Ramos</span>
+                    <p class="text-gray-400 text-center">UX/UI Designer</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors duration-300"><i class="fab fa-linkedin text-xl"></i></a>
+                        <a href="#" class="text-pink-400 hover:text-pink-300 transition-colors duration-300"><i class="fab fa-dribbble text-xl"></i></a>
+                        <a href="#" class="text-teal-400 hover:text-teal-300 transition-colors duration-300"><i class="fas fa-globe text-xl"></i></a>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center space-y-4 group">
+                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 group-hover:border-pink-500 transition-colors duration-300">
+                        <img src="/image/pader.jpg" alt="John Mico Sumbong" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-xl font-semibold text-gray-200 group-hover:text-purple-400 transition-colors duration-300">John Mico Sumbong</span>
+                    <p class="text-gray-400 text-center">Backend Specialist</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors duration-300"><i class="fab fa-linkedin text-xl"></i></a>
+                        <a href="#" class="text-pink-400 hover:text-pink-300 transition-colors duration-300"><i class="fab fa-github text-xl"></i></a>
+                        <a href="#" class="text-teal-400 hover:text-teal-300 transition-colors duration-300"><i class="fas fa-globe text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400 mb-6">Our team of passionate developers and designers is dedicated to creating innovative solutions that push the boundaries of technology and user experience.</p>
+                <button onclick="closeMmodal()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full hover:from-purple-600 hover:to-pink-600 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-lg">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openModal() {
+            const modal = document.getElementById('developer-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('developer-modal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+
+
+
+<!-- campus explore modal code -->
+<div id="campusModal" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex hidden">
+    <div class="relative p-8 bg-gradient-to-br from-blue-100 to-indigo-200 w-full max-w-5xl m-auto flex-col flex rounded-xl shadow-2xl">
+        <div class="flex justify-between items-center pb-3">
+            <p class="text-3xl font-bold text-indigo-800 orbitron">Discover Bago City College</p>
+            <div class="cursor-pointer z-50" onclick="closeModal()">
+                <svg class="fill-current text-indigo-600 hover:text-indigo-800 transition-colors duration-200" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 18 18">
+                    <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
+                </svg>
+            </div>
+        </div>
+        <div class="my-5 flex flex-col md:flex-row gap-8">
+            <div class="md:w-1/2">
+                <h3 class="text-2xl font-semibold text-indigo-700 mb-4">Embark on a Virtual Journey</h3>
+                <p class="text-indigo-900 text-lg mb-6">Immerse yourself in the innovative world of Bago City College. Our campus is a perfect blend of cutting-edge technology and serene nature, designed to inspire the next generation of leaders and thinkers.</p>
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 group hover:bg-indigo-100 p-2 rounded-lg transition-all duration-300">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 transition-colors duration-300">
+                            <i class="fas fa-vr-cardboard text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-indigo-800 font-medium">Interactive 360° Tours</p>
+                            <p class="text-indigo-600 text-sm">Experience our campus like never before</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 group hover:bg-indigo-100 p-2 rounded-lg transition-all duration-300">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 transition-colors duration-300">
+                            <i class="fas fa-map-marked-alt text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-indigo-800 font-medium">Interactive Campus Map</p>
+                            <p class="text-indigo-600 text-sm">Navigate our facilities with ease</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 group hover:bg-indigo-100 p-2 rounded-lg transition-all duration-300">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 transition-colors duration-300">
+                            <i class="fas fa-robot text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-indigo-800 font-medium">AI-Powered Virtual Guide</p>
+                            <p class="text-indigo-600 text-sm">Get personalized campus tours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="md:w-1/2">
+                <div class="relative h-96 rounded-lg overflow-hidden shadow-xl">
+                    <div id="campusMap" class="absolute inset-0 w-full h-full"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-indigo-900 to-transparent">
+                        <h4 class="text-white text-2xl font-bold mb-2">Explore Our Innovation Hubs</h4>
+                        <p class="text-indigo-200">Click on the markers to discover more</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button onclick="startVirtualTour()" class="flex-1 py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:scale-105">
+                        <i class="fas fa-vr-cardboard mr-2"></i> Start Virtual Tour
+                    </button>
+                    <button onclick="showCampusEvents()" class="flex-1 py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:scale-105">
+                        <i class="fas fa-calendar-alt mr-2"></i> Campus Events
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-8 text-center">
+            <p class="text-indigo-800 font-semibold">Want to learn more about our programs?</p>
+            <button onclick="exploreDepartments()" class="mt-4 px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105">
+                <i class="fas fa-graduation-cap mr-2"></i> Explore Departments
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openMmodal() {
+        const modal = document.getElementById('campusModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex'); // Ensure it's displayed as flex
+        initializeMap();
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('campusModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex'); // Hide it from view
+    }
+
+    function initializeMap() {
+        if (!window.mapInitialized) {
+            var map = L.map('campusMap').setView([10.5373, 122.8393], 17);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add markers for key locations
+            L.marker([10.5373, 122.8393]).addTo(map)
+                .bindPopup('Main Building');
+            L.marker([10.5375, 122.8395]).addTo(map)
+                .bindPopup('Library');
+            L.marker([10.5371, 122.8391]).addTo(map)
+                .bindPopup('Sports Complex');
+
+            window.mapInitialized = true;
+        }
+    }
+    
+
+ 
+
+    function startVirtualTour() {
+            const tourContainer = document.createElement('div');
+            tourContainer.id = 'tourContainer';
+            tourContainer.innerHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                    <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-8 rounded-xl max-w-4xl w-full shadow-2xl">
+                        <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Virtual Campus Tour</h2>
+                        <p class="mb-6 text-gray-300">Explore our campus with this immersive 360° tour. Use your mouse or touch to look around.</p>
+                        <div id="aframeContainer" class="w-full h-96 rounded-lg overflow-hidden mb-6">
+                            <a-scene>
+                                <a-assets>
+                                    <video id="video" autoplay loop></video>
+                                </a-assets>
+                                <a-videosphere id="videoSphere" src="#video"></a-videosphere>
+                                <a-text id="locationLabel" value="" align="center" position="0 1.5 -3" color="white"></a-text>
+                            </a-scene>
+                        </div>
+                        <div class="flex justify-between">
+                            <button id="prevLocation" class="bg-blue-700 text-white px-6 py-3 rounded-full hover:bg-blue-600 transition duration-300 transform hover:scale-105">
+                                <i class="fas fa-chevron-left mr-2"></i> Previous
+                            </button>
+                            <span id="locationTitle" class="text-xl font-semibold text-blue-400 self-center"></span>
+                            <button id="nextLocation" class="bg-purple-700 text-white px-6 py-3 rounded-full hover:bg-purple-600 transition duration-300 transform hover:scale-105">
+                                Next <i class="fas fa-chevron-right ml-2"></i>
+                            </button>
+                        </div>
+                        <button id="closeTour" class="mt-6 w-full bg-indigo-600 text-white px-6 py-3 rounded-full hover:bg-indigo-700 transition duration-300 transform hover:scale-105">Close Tour</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(tourContainer);
+
+            initAFrame();
+        }
+
+        function initAFrame() {
+            const locations = [
+                {url: '/image/yo.mp4', title: "Main Building"},
+                {url: 'path/to/video2.mp4', title: "Library"},
+                {url: 'path/to/video3.mp4', title: "Sports Complex"}
+            ];
+            let currentLocationIndex = 0;
+
+            const locationTitle = document.getElementById('locationTitle');
+            const locationLabel = document.getElementById('locationLabel');
+            const video = document.getElementById('video');
+            const videoSphere = document.getElementById('videoSphere');
+
+            locationTitle.textContent = locations[currentLocationIndex].title;
+            locationLabel.setAttribute('value', locations[currentLocationIndex].title);
+            video.src = locations[currentLocationIndex].url;
+
+            function updateLocation() {
+                video.src = locations[currentLocationIndex].url;
+                video.play(); // Ensure video starts playing
+                locationTitle.textContent = locations[currentLocationIndex].title;
+                locationLabel.setAttribute('value', locations[currentLocationIndex].title);
+            }
+
+            document.getElementById('prevLocation').addEventListener('click', () => {
+                currentLocationIndex = (currentLocationIndex - 1 + locations.length) % locations.length;
+                updateLocation();
+            });
+
+            document.getElementById('nextLocation').addEventListener('click', () => {
+                currentLocationIndex = (currentLocationIndex + 1) % locations.length;
+                updateLocation();
+            });
+
+            document.getElementById('closeTour').addEventListener('click', () => {
+                const tourContainer = document.getElementById('tourContainer');
+                if (tourContainer) {
+                    // Pause and remove video element
+                    if (video) {
+                        video.pause();
+                        video.src = ''; // Clear video source
+                    }
+                    // Remove the tour container
+                    document.body.removeChild(tourContainer);
+                }
+            });
+        }
+   
+
+    function showCampusEvents() {
+        const eventsContainer = document.createElement('div');
+        eventsContainer.innerHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-8 rounded-xl max-w-3xl w-full shadow-2xl">
+                    <h2 class="text-3xl font-bold mb-6 text-white text-center">Upcoming Campus Events</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-white bg-opacity-20 p-4 rounded-lg backdrop-filter backdrop-blur-lg">
+                            <h3 class="text-xl font-semibold text-white mb-2">Annual Tech Symposium</h3>
+                            <p class="text-gray-200">May 15, 2023</p>
+                            <div class="mt-2 w-1/4 h-1 bg-yellow-300 rounded"></div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-4 rounded-lg backdrop-filter backdrop-blur-lg">
+                            <h3 class="text-xl font-semibold text-white mb-2">Summer Music Festival</h3>
+                            <p class="text-gray-200">June 5-7, 2023</p>
+                            <div class="mt-2 w-1/4 h-1 bg-pink-300 rounded"></div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-4 rounded-lg backdrop-filter backdrop-blur-lg">
+                            <h3 class="text-xl font-semibold text-white mb-2">Freshmen Orientation Week</h3>
+                            <p class="text-gray-200">August 22-26, 2023</p>
+                            <div class="mt-2 w-1/4 h-1 bg-green-300 rounded"></div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-4 rounded-lg backdrop-filter backdrop-blur-lg">
+                            <h3 class="text-xl font-semibold text-white mb-2">Alumni Homecoming</h3>
+                            <p class="text-gray-200">October 8, 2023</p>
+                            <div class="mt-2 w-1/4 h-1 bg-red-300 rounded"></div>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove()" class="w-full bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:bg-opacity-90 transition duration-300 transform hover:scale-105">Close Events</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(eventsContainer);
+    }
+
+    function exploreDepartments() {
+        const departmentsContainer = document.createElement('div');
+        departmentsContainer.innerHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-8 rounded-xl max-w-4xl w-full shadow-2xl">
+                    <h2 class="text-3xl font-bold mb-6 text-white text-center">Explore Our Departments</h2>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <li class="bg-white bg-opacity-20 p-6 rounded-lg backdrop-filter backdrop-blur-lg transform transition duration-300 hover:scale-105">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-laptop-code text-3xl text-yellow-300 mr-4"></i>
+                                <h3 class="text-xl font-bold text-white">BSIS (Bachelor of Science in Information Systems)</h3>
+                            </div>
+                            <p class="text-gray-200">Cutting-edge programs in information technology and systems management.</p>
+                        </li>
+                        <li class="bg-white bg-opacity-20 p-6 rounded-lg backdrop-filter backdrop-blur-lg transform transition duration-300 hover:scale-105">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-balance-scale text-3xl text-red-300 mr-4"></i>
+                                <h3 class="text-xl font-bold text-white">CRIMINOLOGY</h3>
+                            </div>
+                            <p class="text-gray-200">Comprehensive courses in criminal justice, forensics, and law enforcement.</p>
+                        </li>
+                        <li class="bg-white bg-opacity-20 p-6 rounded-lg backdrop-filter backdrop-blur-lg transform transition duration-300 hover:scale-105">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-book-open text-3xl text-green-300 mr-4"></i>
+                                <h3 class="text-xl font-bold text-white">AB (Bachelor of Arts)</h3>
+                            </div>
+                            <p class="text-gray-200">Diverse programs in humanities, social sciences, and liberal arts.</p>
+                        </li>
+                        <li class="bg-white bg-opacity-20 p-6 rounded-lg backdrop-filter backdrop-blur-lg transform transition duration-300 hover:scale-105">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-chalkboard-teacher text-3xl text-pink-300 mr-4"></i>
+                                <h3 class="text-xl font-bold text-white">EDUCATION</h3>
+                            </div>
+                            <p class="text-gray-200">Preparing future educators with innovative teaching methods and practices.</p>
+                        </li>
+                    </ul>
+                    <button onclick="this.closest('.fixed').remove()" class="w-full bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:bg-opacity-90 transition duration-300 transform hover:scale-105">Close Departments</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(departmentsContainer);
+    }
+</script>
+  
+</body>
+</html>
+
+
+
+
+
+
+
+

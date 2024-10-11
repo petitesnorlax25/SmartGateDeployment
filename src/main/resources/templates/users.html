@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartGate User Management</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="/css/users.css">
+<script src="/js/jquery-3.6.0.js"></script>
+<script src="/js/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="/css/sweetalert2.min.css">
+	<script src="/js/sweetalert2.min.js"></script>
+			
+<script src="/js/jquery.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="flex flex-col h-screen bg-gray-00 animate-fade-in">
+    
+
+    <!-- Wrapper for Sidebar and Top Bar -->
+    <div class="flex animate-fade-in-delay">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar bg-gray-800 text-white flex flex-col animate-fade-in">
+            <div class="p-4 flex items-center justify-between sidebar-logo logo-border relative">
+                <div class="flex items-center">
+                    <img src="/image/ahe.png" alt="Logo" class="h-8 w-8 mr-2">
+                    <span class="font-bold text-lg sidebar-expanded">SMARTGATE</span>
+                </div>
+            </div>
+			<a th:href="@{/getProfile}" class="flex items-center mt-6 px-4 space-x-3 pb-4 hover:bg-gray-700 rounded transition duration-300">
+					    <!-- Corrected th:src attribute -->
+					    <img th:src="@{'/display?id=' + ${session.currentUser.id}}" alt="User Profile" class="h-12 w-12 rounded-full cursor-pointer">
+					    <div class="profile-info">
+					      <p class="font-semibold sidebar-expanded" th:text="${session.currentUser.fullname}"></p>
+			                   <p class="text-sm text-gray-400 sidebar-expanded" th:text="${session.currentUser.userType}"></p>
+					    </div>
+					</a>
+					
+            <nav class="flex-1 mt-10 space-y-2 px-4">
+                <a th:href="@{/getDashboard}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+                    <i class="fas fa-tachometer-alt mr-3"></i><span>DASHBOARDS</span>
+                    <span class="tooltip">DASHBOARDS</span>
+                </a>
+                <a th:href="@{/getUsers}" class="sidebar-nav-item flex items-center p-2 text-white bg-purple-600  rounded group">
+                    <i class="fas fa-users mr-3"></i><span>USER MANAGEMENT</span>
+                    <span class="tooltip">USERS</span>
+                </a>
+                <a th:href="@{/smartgate}"
+                    class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700  rounded group">
+                    <i class="fas fa-door-open mr-3"></i><span>SMARTGATE</span>
+                    <span class="tooltip">SMARTGATE</span>
+                </a>
+               
+				<a th:href="@{/getStudents}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+				                   <i class="fas fa-list mr-3"></i><span>STUDENT LIST</span>
+				                   <span class="tooltip">STUDENT LIST</span>
+				               </a>
+							<a th:href="@{/getVisitors}" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+							                   <i class="fas fa-list mr-3"></i><span>VISITORS LIST</span>
+							                   <span class="tooltip">VISITORS LIST</span>
+							               </a>
+                <div class="sidebar-nav-item">
+                    <a href="#" class="flex items-center p-2 text-white hover:bg-gray-700 rounded group" onclick="toggleHistorySubmenu(event)">
+                        <i class="fas fa-history mr-3"></i><span>HISTORY</span>
+                        <i class="fas fa-chevron-down ml-auto transition-transform duration-300" id="historyChevron"></i>
+                        <span class="tooltip">HISTORY</span>
+                    </a>
+                    <div id="historySubmenu" class="pl-8 transition-all duration-300 overflow-hidden hidden">
+						<form th:action="@{/getStudentLogs}" method="post">
+                        <button  class="block p-2 text-white hover:bg-gray-700 rounded relative group">
+                            <i class="fas fa-user-graduate mr-2"></i><span class="submenu-text">Student Log</span>
+                        </button>
+						</form>
+						<form th:action="@{/getVisitorLogs}" method="post">
+                        <button class="block p-2 text-white hover:bg-gray-700 rounded relative group">
+                            <i class="fas fa-user-tie mr-2"></i><span class="submenu-text">Visitors Log</span>
+                        </button>
+						</form>
+                    </div>
+                </div>
+                <script>
+                   function toggleHistorySubmenu(event) {
+    event.preventDefault();
+    const submenu = document.getElementById('historySubmenu');
+    const chevron = document.getElementById('historyChevron');
+    const sidebar = document.getElementById('sidebar');
+
+    submenu.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+
+    // Adjust alignment when minimized
+    if (sidebar.classList.contains('minimized')) {
+        submenu.style.position = 'absolute';
+        submenu.style.left = '100%';
+        submenu.style.top = '0';
+        submenu.style.width = '200px'; // Adjust width as needed
+        submenu.style.backgroundColor = '#1F2937';
+        submenu.style.boxShadow = '2px 0 5px rgba(0,0,0,0.1)';
+        submenu.style.zIndex = '1000';
+        submenu.style.display = submenu.classList.contains('hidden') ? 'none' : 'block';
+
+        const submenuItems = submenu.querySelectorAll('a');
+        submenuItems.forEach(item => {
+            item.classList.add('flex', 'items-center');
+            item.classList.remove('block');
+            item.style.padding = '0.5rem';
+            item.style.whiteSpace = 'nowrap';
+            
+            // Keep text visible
+            const span = item.querySelector('.submenu-text');
+            if (span) {
+                span.style.display = 'inline';
+                span.style.marginLeft = '0.5rem';
+                span.style.opacity = '1';
+                span.style.visibility = 'visible';
+            }
+        });
+
+        // Show submenu on hover
+        const historyItem = document.querySelector('.sidebar-nav-item');
+        historyItem.addEventListener('mouseenter', function() {
+            if (sidebar.classList.contains('minimized') && !submenu.classList.contains('hidden')) {
+                submenu.style.display = 'block';
+            }
+        });
+        historyItem.addEventListener('mouseleave', function() {
+            if (sidebar.classList.contains('minimized')) {
+                submenu.style.display = 'none';
+            }
+        });
+    } else {
+        submenu.style.position = 'static';
+        submenu.style.left = 'auto';
+        submenu.style.top = 'auto';
+        submenu.style.width = '100%';
+        submenu.style.backgroundColor = 'transparent';
+        submenu.style.boxShadow = 'none';
+        submenu.style.zIndex = 'auto';
+        submenu.style.display = submenu.classList.contains('hidden') ? 'none' : 'block';
+
+        // Reset alignment for expanded state
+        const submenuItems = submenu.querySelectorAll('a');
+        submenuItems.forEach(item => {
+            item.classList.remove('flex', 'items-center');
+            item.classList.add('block');
+            item.style.padding = '0.5rem 1rem';
+            item.style.whiteSpace = 'normal';
+            
+            // Ensure text is visible
+            const span = item.querySelector('.submenu-text');
+            if (span) {
+                span.style.display = 'inline';
+                span.style.marginLeft = '0';
+                span.style.opacity = '1';
+                span.style.visibility = 'visible';
+            }
+        });
+    }
+}
+
+// Prevent event bubbling for submenu items
+document.querySelectorAll('#historySubmenu a').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+});
+
+// Ensure submenu text is always visible
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const submenuTexts = document.querySelectorAll('.submenu-text');
+
+    function updateSubmenuTextVisibility() {
+        submenuTexts.forEach(text => {
+            text.style.display = 'inline';
+            text.style.opacity = '1';
+            text.style.visibility = 'visible';
+        });
+    }
+
+    // Initial call
+    updateSubmenuTextVisibility();
+
+    // Update on sidebar toggle
+    sidebar.addEventListener('transitionend', updateSubmenuTextVisibility);
+});
+
+                </script>
+                <a href="#" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+                    <i class="fas fa-info-circle mr-3"></i><span>ABOUT US</span>
+                    <span class="tooltip">ABOUT US</span>
+                </a>
+                <div id="hasNotif" style="display: none;">
+				    <a href="#" class="sidebar-nav-item flex items-center p-1 text-white hover:bg-gray-700 rounded-lg transition duration-300 glow-animation">
+				    
+				        <form th:action="@{/getSecurityAlerts}" method="get">
+				            <button class="block p-2 text-white rounded-lg relative group transition duration-300 ">
+				            <i class="fas fa-bell mr-2 text-lg"></i>
+				            <span class="font-bold text-md">SECURITY ALERT</span>
+				            <span class="tooltip">SECURITY ALERT</span>
+				            <input type="hidden" name="notif" value="hasNotif">
+				            </button>
+				            <div id="notifText" class="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-3 py-1 font-bold">!</div>
+				       </form>
+				    
+				</a>
+				</div>
+				<div id="noNotif">
+                <a href="#" class="sidebar-nav-item flex items-center p-2 text-white hover:bg-gray-700 rounded group">
+					
+						<form th:action="@{/getSecurityAlerts}" method="get">
+							<button class="block p-2 text-white hover:bg-gray-700 rounded relative group">
+		                    <i class="fas fa-bell mr-3"></i><span>SECURITY ALERT</span>
+		                    <span class="tooltip">SECURITY ALERT</span>
+		                    <input type="hidden" name="notif" value="notif">
+		                    </button>
+		               </form>
+                    
+                </a>
+                </div>
+            </nav>
+            <!-- Toggle Button -->
+            <button id="sidebar-toggle" class="toggle-bar focus:outline-none relative flex items-center justify-center">
+                <i class="fas fa-toggle-on toggle-icon"></i>
+                <span class="ml-2">Toggle Sidebar</span>
+                <span class="tooltip">Toggle Sidebar</span>
+            </button>
+            <!-- Footer Section -->
+            <div class="mt-auto p-4 text-center footer-border">
+                <p class="footer-text-full text-gray-500 text-sm">&copy; 2024 TagoyGroup. All rights reserved.</p>
+                <p class="footer-text-collapsed text-gray-500 text-sm hidden">&copy; 2024</p>
+            </div>
+            
+        </div>
+
+        <div id="main-content" class="flex-1 mb-0 animate-fade-in ">
+				<div class="top-bar bg-white border-b border-gray-300 ml-10 mr-10 shadow-md flex items-center justify-between p-4 min-h-[64px]">
+        <!-- Dashboard Text -->
+        <div class="relative overflow-hidden w-max">
+            <span class="text-lg font-extrabold text-gray-900 border-r-4 border-gray-900 pr-2 whitespace-nowrap typing-text">
+                SMARTGATE
+            </span>
+        </div>
+        
+        <div class="relative">
+            <button id="power-button" class="icon-button text-gray-600 hover:text-gray-800">
+                <i class="fas fa-power-off text-2xl"></i>
+            </button>
+        
+            <div id="dropdown-menu" class="dropdown-menu">
+                
+                    <button type="submit" name="command" value="open" class="flex items-center p-2 text-gray-700 hover:bg-gray-100 relative" onclick="command('open')">
+                        <i class="fas fa-door-open text-2xl text-green-600 mr-2"></i>
+                        <span class="tooltip">Open Gate</span>
+                    </button>
+                    <button type="submit" id="closedBut" name="command" value="close" class="flex items-center p-2 text-gray-700 hover:bg-gray-100 relative" onclick="command('close')">
+                        <i class="fas fa-door-closed text-2xl text-red-600 mr-2"></i>
+                        <span class="tooltip">Close Gate</span>
+                    </button>
+                
+                <a th:href="@{/logout}" class="flex items-center p-2 text-gray-700 hover:bg-gray-100 relative">
+                    <i class="fas fa-sign-out-alt text-2xl text-blue-600 mr-2"></i>
+                    <span class="tooltip">Log Out</span>
+                </a>
+            </div>
+        </div>
+    </div>
+				
+  <!-- Tabs -->
+  <div class="flex justify-center border-b-2 border-gray-200 mb-6 space-x-6">
+    <button
+      class="tab-button text-gray-600 hover:text-blue-500 font-semibold py-2 px-4 transition-colors duration-200 border-b-4 border-transparent focus:outline-none"
+      id="tab-1"
+    >
+      User List
+    </button>
+    <button
+      class="tab-button text-gray-600 hover:text-blue-500 font-semibold py-2 px-4 transition-colors duration-200 border-b-4 border-transparent focus:outline-none"
+      id="tab-2"
+    >
+      Guard on Duty
+    </button>
+    <button
+      class="tab-button text-gray-600 hover:text-blue-500 font-semibold py-2 px-4 transition-colors duration-200 border-b-4 border-transparent focus:outline-none"
+      id="tab-3"
+    >
+      Activity Logs
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content-container bg-white shadow-lg rounded-lg">
+    <!-- Content 1 -->
+    <div id="content1" class="tab-content px-8 py-6 hidden">
+      <h1 class="text-3xl font-semibold text-gray-800 mb-4">User Management</h1>
+
+      <div class="flex justify-between items-center mb-4">
+        <input type="text" id="search-input" placeholder="Search users..." class="shadow appearance-none border rounded py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 w-1/3">
+        
+        <button id="add-user" class="flex items-center text-white px-6 py-2 bg-green-500 rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <i class="fas fa-user-plus mr-2"></i>
+          <span class="font-medium">Add User</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table id="users-table" class="min-w-full bg-white shadow-md rounded-lg">
+          <thead>
+            <tr class="bg-gray-800 text-white uppercase text-sm leading-normal">
+              <th class="py-3 px-6 text-left">Fullname</th>
+              <th class="py-3 px-6 text-left">Username</th>
+              <th class="py-3 px-6 text-center">Role</th>
+              <th class="py-3 px-6 text-center">Image</th>
+              <th class="py-3 px-6 text-center">Status</th>
+              <th class="py-3 px-6 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-600 text-sm font-light">
+            <tr class="border-b border-gray-200 hover:bg-gray-100" th:each="user : ${users}">
+              <td class="py-3 px-6 text-left" th:text="${user.fullname}"></td>
+              <td class="py-3 px-6 text-left" th:text="${user.username}"></td>
+              <td class="py-3 px-6 text-center" th:text="${user.userType}"></td>
+              <td class="py-3 px-6 text-left">
+                <img class="img-thumbnail h-12 w-12 rounded-full object-cover border-2 border-indigo-300" th:src="@{${'/display?id=' + user.id}}" alt="Avatar">
+              </td>
+              <td class="py-3 px-6 text-center">
+                <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs" th:if="${user.status == 1}">ENABLED</span>
+                <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs" th:if="${user.status == 0}">DISABLED</span>
+              </td>
+              <td class="py-3 px-6 text-center">
+                <div class="relative inline-block"> <!-- Add relative positioning here -->
+  <button class="bg-blue-500 text-white px-3 py-1 rounded-md" onclick="toggleDropdown(this)">
+    <i class="fas fa-ellipsis-h"></i>
+  </button>
+  <!-- Dropdown -->
+  <div class="hidden absolute left-0 mt-1 w-48 bg-white rounded-lg shadow-lg z-10">
+    <ul class="py-1">
+      <li>
+        <a id="view" href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+           th:attr="data-id=${user.id}, data-username=${user.username}, data-usertype=${user.userType}, data-status=${user.status}, data-contact=${user.contactNumber}, data-email=${user.email}, data-program=${user.programCode}, data-fullname=${user.fullname}, data-timeStamp=${user.createdAt}"
+           onclick="viewUser(this)">View</a>
+      </li>
+      <li>
+        <a id="edit" href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+           th:attr="data-id=${user.id}, data-username=${user.username}, data-usertype=${user.userType}, data-status=${user.status}, data-contact=${user.contactNumber}, data-email=${user.email}, data-program=${user.programCode}, data-fullname=${user.fullname}"
+           onclick="editUser(this)">Edit</a>
+      </li>
+      <li th:if="${session.currentUser.userType == 'superadmin'}">
+        <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+           th:attr="data-id=${user.id}" onclick="deleteUser(this)">Delete</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Content 2 -->
+    <div id="content2" class="tab-content px-6 py-4 hidden">
+    <h1 class="text-2xl font-semibold text-gray-700">Guard on Duty</h1>
+    
+    <div th:if="${#lists.isEmpty(session.loggedGuards)}" class="mt-4">
+        <p class="text-gray-600">No current guards on duty.</p>
+    </div>
+
+    <div th:each="loggedGuard : ${session.loggedGuards}" class="flex items-center mt-4">
+        <div class="relative inline-block">
+		    <img class="img-thumbnail h-12 w-12 rounded-full object-cover border-2 border-indigo-300" 
+		         th:src="@{/display(id=${loggedGuard.users.id})}" 
+		         alt="Avatar">
+		    <span class="absolute top-2 right-2"><i class="fa-solid fa-circle" style="color: #04bc01;"></i></span>
+		</div>
+        <p class="ml-4 text-gray-600" th:text="${'Name: ' + loggedGuard.users.fullname}"></p>
+    </div>
+
+    <div class="flex justify-between items-center mb-4 mt-6">
+        <input type="text" id="guards-search-input" placeholder="Search..." 
+               class="shadow appearance-none border rounded py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 w-1/3">
+    </div>
+
+    <h1 class="text-xl font-semibold text-gray-700 mt-6">Guard Duty History</h1>
+    <div class="filter-container mb-4">
+    <label for="start-time-filter">Start Time:</label>
+    <input type="datetime-local" id="start-time-filter" class="border rounded p-2">
+    
+    <label for="end-time-filter" class="ml-4">End Time:</label>
+    <input type="datetime-local" id="end-time-filter" class="border rounded p-2">
+    
+    <button onclick="filterTable()" class="bg-blue-500 text-white px-3 py-1 rounded-md ml-4">Filter</button>
+</div>
+
+    <div class="overflow-x-auto mt-4">
+        <table id="guards-table" class="min-w-full bg-white shadow-md rounded-lg">
+            <thead>
+                <tr class="bg-gray-800 text-white uppercase text-sm leading-normal">
+                    <th class="py-3 px-6 text-left">FullName</th>
+                    <th class="py-3 px-6 text-left">Username</th>
+                    <th class="py-3 px-6 text-center">Image</th>
+                    <th class="py-3 px-6 text-center">DutyStartTime</th>
+                    <th class="py-3 px-6 text-center">DutyEndTime</th>
+                    <th class="py-3 px-6 text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="guards-tbody" class="text-gray-600 text-sm font-light">
+                <tr class="border-b border-gray-200 hover:bg-gray-100" th:each="guardLog : ${session.guardLogs}">
+                    <td class="py-3 px-6 text-left" th:text="${guardLog.users.fullname}"></td>
+                    <td class="py-3 px-6 text-left" th:text="${guardLog.users.username}"></td>
+                    <td class="py-3 px-6 text-left">
+                        <img class="img-thumbnail h-12 w-12 rounded-full object-cover border-2 border-indigo-300" 
+                             th:src="@{/display(id=${guardLog.users.id})}" 
+                             alt="Avatar">
+                    </td>
+                    <td class="py-3 px-6 text-center" th:text="${guardLog.startTimeStamp}"></td>
+                    <td class="py-3 px-6 text-center" th:text="${guardLog.endTimeStamp}"></td>
+                    <td class="py-3 px-6 text-center">
+                        <div class="relative inline-block">
+                            <button class="bg-blue-500 text-white px-3 py-1 rounded-md" onclick="toggleDropdown(this)">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <!-- Dropdown -->
+                            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+                                <ul class="py-1">
+                                    <li>
+                                        <a id="view" href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                           th:attr="data-id=${guardLog.users.id}, data-username=${guardLog.users.username}, data-usertype=${guardLog.users.userType}, data-status=${guardLog.users.status}, data-contact=${guardLog.users.contactNumber}, data-email=${guardLog.users.email}, data-program=${guardLog.users.programCode}, data-fullname=${guardLog.users.fullname}, data-timeStamp=${guardLog.users.createdAt}"
+                                           onclick="viewUser(this)">View Guard</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    
+    <!-- Content 3 -->
+    <div id="content3" class="tab-content px-6 py-4 hidden">
+      <h1 class="text-2xl font-semibold text-gray-700">Activity Logs</h1>
+      <p class="mt-4 text-gray-600">View all activity logs and recent changes in this area.</p>
+      <div class="flex justify-between items-center mb-4 mt-6">
+        <input type="text" id="activity-search-input" placeholder="Search..." 
+               class="shadow appearance-none border rounded py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300 w-1/3">
+    </div>
+
+    <div class="overflow-x-auto mt-4">
+        <table id="activity-table" class="min-w-full bg-white shadow-md rounded-lg">
+            <thead>
+                <tr class="bg-gray-800 text-white uppercase text-sm leading-normal">
+                    <th class="py-3 px-6 text-left">FullName</th>
+                    <th class="py-3 px-6 text-left">Username</th>
+                    <th class="py-3 px-6 text-center">Image</th>
+                    <th class="py-3 px-6 text-center">Activity</th>
+                    <th class="py-3 px-6 text-center">Time of Activity</th>
+                    <th class="py-3 px-6 text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-600 text-sm font-light">
+                <tr class="border-b border-gray-200 hover:bg-gray-100" th:each="activityLogs : ${session.activityLogs}">
+                    <td class="py-3 px-6 text-left" th:text="${activityLogs.users.fullname}"></td>
+                    <td class="py-3 px-6 text-left" th:text="${activityLogs.users.username}"></td>
+                    <td class="py-3 px-6 text-left">
+                        <img class="img-thumbnail h-12 w-12 rounded-full object-cover border-2 border-indigo-300" 
+                             th:src="@{/display(id=${activityLogs.users.id})}" 
+                             alt="Avatar">
+                    </td>
+                    <td class="py-3 px-6 text-center" th:text="${activityLogs.activity}"></td>
+                    <td class="py-3 px-6 text-center" th:text="${activityLogs.timeOfActivity}"></td>
+                    <td class="py-3 px-6 text-center">
+                        <div class="relative inline-block">
+                            <button class="bg-blue-500 text-white px-3 py-1 rounded-md" onclick="toggleDropdown(this)">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <!-- Dropdown -->
+                            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+                                <ul class="py-1">
+                                    <li>
+                                        <a id="view" href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                                           th:attr="data-id=${activityLogs.users.id}, data-username=${activityLogs.users.username}, data-usertype=${activityLogs.users.userType}, data-status=${activityLogs.users.status}, data-contact=${activityLogs.users.contactNumber}, data-email=${activityLogs.users.email}, data-program=${activityLogs.users.programCode}, data-fullname=${activityLogs.users.fullname}, data-timeStamp=${activityLogs.users.createdAt}"
+                                           onclick="viewUser(this)">View Guard</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+  </div>
+
+
+
+
+			
+    <!-- add modal code -->
+     <div id="add-user-modal" class="modal hidden ">
+        <div class="modal-content bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2" >
+             <div class="bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2"> <!-- Increased width -->
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Add User</h2>
+        <form id="add-user-form" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="fullname" class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                <input type="text" id="fullname" name="fullname" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="fullname" required>
+            </div>
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                <input type="text" id="username" name="username" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="username" required>
+                <div id="usernameError"></div>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                <input type="password" id="password" name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="********" onkeyup="validatePassword()" required>
+                <div id="passwordError"></div>
+            </div>
+            <div class="mb-4">
+                <label for="number" class="block text-gray-700 text-sm font-bold mb-2">Contact Number</label>
+                <input type="text" id="number" name="number" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="contact number" required>
+                <div id="numberError"></div>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Emailw</label>
+                <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="email" required>
+            </div>
+            <div class="mb-4">
+                <label for="userType" class="block text-gray-700 text-sm font-bold mb-2">Role</label>
+                <select id="userType" name="userType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" required>
+                    <option value="">Select Role</option>
+                    <option value="admin" th:if="${session.currentUser.userType == 'superadmin'}">admin</option>
+                    <option value="departmenthead">departmenthead</option>
+                    <option value="guard">guard</option>
+                </select>
+                <select id="program-code" name="programCode" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" style="display: none;">
+                    <option value="N/A">Select Program Code</option>
+                    <option value="ARTS">ARTS</option>
+                    <option value="IS">IS</option>
+                    <option value="EDUC">EDUC</option>
+                    <option value="CRIM">CRIM</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">image</label>
+                <input type="file" id="image" accept="image/*" name="image">
+            </div>
+            <div class="flex items-center justify-between">
+                <button id="add-user-button" type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Add User</button>
+            </div>
+        </form>
+    </div>
+        </div>
+    </div>
+  </div>
+
+                            
+<!--edit user modal-->
+ <div id="edit-user-modal" class="modal hidden">
+    <div class="modal-content bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Edit User</h2>
+            
+        </div>
+        <form id="edit-user-form" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="edit-fullname" class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                <input type="text" id="edit-fullname" name="fullname" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="fullname" required>
+            </div>
+            <div class="mb-4">
+                <label for="edit-username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                <input type="text" id="edit-username" name="username" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="username" required>
+                <div id="edit-usernameError"></div>
+            </div>
+            <div class="mb-4">
+                <label for="edit-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                <input type="email" id="edit-email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="email" required>
+                <div id="edit-emailError"></div>
+            </div>
+            <div class="mb-4">
+                <label for="edit-number" class="block text-gray-700 text-sm font-bold mb-2">Contact Number</label>
+                <input type="text" id="edit-number" name="contactNumber" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" placeholder="contact number" required>
+                <div id="edit-numberError"></div>
+            </div>
+            <div class="mb-4">
+                <label for="edit-userType" class="block text-gray-700 text-sm font-bold mb-2">Role</label>
+                <select id="edit-userType" name="userType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" required>
+                    <option value="">Select Role</option>
+                    <option value="admin" th:if="${session.currentUser.userType == 'superadmin'}">admin</option>
+                    <option value="departmenthead">departmenthead</option>
+                    <option value="guard">guard</option>
+                </select>
+                <select id="edit-programCode" name="programCode" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" style="display: none;">
+                    <option value="N/A">Select Program Code</option>
+                    <option value="ARTS">ARTS</option>
+                    <option value="IS">IS</option>
+                    <option value="EDUC">EDUC</option>
+                    <option value="CRIM">CRIM</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="edit-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                <select id="edit-status" name="status" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" required>
+                    <option value="1">Enable</option>
+                    <option value="0">Disable</option>
+                </select>
+            </div>
+           <div class="mb-4">
+			    <label for="edit-img" class="block text-gray-700 text-sm font-bold mb-2">Image</label>
+			    <div class="flex items-center">
+			        <img id="current-img" class="img-thumbnail h-12 w-12 rounded-full object-cover border-2 border-indigo-300 mr-4" th:src="@{/display?id=0}" alt="Current Avatar">
+			        <input type="file" id="edit-img" name="image" accept="image/*" class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-blue-300" onchange="previewImage(event)">
+			    </div>
+			</div>
+            <div class="flex items-center justify-between">
+				<input type="hidden" id="edit-id" name="id">
+				
+                <button id="edit-user-button" type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Save User</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!--view user modal-->
+<div id="view-user-modal" class="modal hidden">
+    <div class="modal-content bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2">
+        <div class="flex flex-col items-center mb-6">
+            <img id="view-img" class="h-24 w-24 rounded-full object-cover border-2 border-indigo-300 mb-4" th:src="@{/display?id=0}" alt="Avatar">
+            <h2 class="text-2xl font-semibold text-gray-800">User Profile</h2>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Full Name</label>
+            <p id="view-fullname" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Username</label>
+            <p id="view-username" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Email</label>
+            <p id="view-email" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Contact Number</label>
+            <p id="view-number" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Role</label>
+            <p id="view-userType" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Program Code</label>
+            <p id="view-programCode" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">Status</label>
+            <p id="view-status" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-1">TimeStamp</label>
+            <p id="view-timeStamp" class="text-gray-700 text-lg border-b-2 border-gray-200 pb-2"></p>
+        </div>
+    </div>
+</div>
+
+
+
+		<script>
+    // Global Variables
+    const editModal = document.getElementById('edit-user-modal');
+    const editUserForm = document.getElementById('edit-user-form');
+    const editUserButton = document.getElementById('edit-user-button');
+    const addModal = document.getElementById('add-user-modal');
+    const viewModal = document.getElementById('view-user-modal');
+    const addUserForm = document.getElementById("add-user-form");
+    const addUserButton = document.getElementById("add-user-button");
+    const role = document.getElementById("userType");
+    const programCode = document.getElementById("program-code");
+    const editRole = document.getElementById("edit-userType");
+    const editProgramCode = document.getElementById("edit-programCode");
+    const number = document.getElementById("number");
+    const editNumber = document.getElementById("edit-number");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+	const editUsernameError = document.getElementById("edit-usernameError");
+    const usernameError = document.getElementById("usernameError");
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    var pastUsername;
+    document.addEventListener('DOMContentLoaded', function () {
+	    var sidebar = document.getElementById('sidebar');
+	    var topBar = document.querySelector('.top-bar');
+	    var mainContent = document.getElementById('main-content');
+	    var footerTextFull = document.querySelector('.footer-text-full');
+	    var footerTextCollapsed = document.querySelector('.footer-text-collapsed');
+	    var dropdownMenu = document.getElementById('dropdown-menu');
+	    var powerButton = document.getElementById('power-button');
+
+	    // Function to update layout based on sidebar state
+	    function updateLayout() {
+	        const savedState = localStorage.getItem('sidebarState');
+	        if (savedState === 'minimized') {
+	            sidebar.classList.add('minimized');
+	            sidebar.classList.remove('expanded');
+	            footerTextFull.classList.add('hidden');
+	            footerTextCollapsed.classList.remove('hidden');
+	        } else {
+	            sidebar.classList.remove('minimized');
+	            sidebar.classList.add('expanded');
+	            footerTextFull.classList.remove('hidden');
+	            footerTextCollapsed.classList.add('hidden');
+	        }
+
+	        // Update other elements based on sidebar state
+	        document.querySelectorAll('.sidebar-expanded').forEach(el => el.classList.toggle('hidden', sidebar.classList.contains('minimized')));
+	        document.querySelectorAll('.sidebar-collapsed').forEach(el => el.classList.toggle('hidden', !sidebar.classList.contains('minimized')));
+	        document.querySelectorAll('.toggle-bar span').forEach(el => el.classList.toggle('hidden', sidebar.classList.contains('minimized')));
+	        topBar.classList.toggle('minimized', sidebar.classList.contains('minimized'));
+	        mainContent.classList.toggle('minimized', sidebar.classList.contains('minimized'));
+
+	        // Ensure dropdown menu is hidden by default
+	        dropdownMenu.classList.remove('show');
+	        dropdownMenu.classList.add('hide');
+	        dropdownMenu.style.display = 'none';
+	    }
+	    	powerButton.addEventListener('click', function (event) {
+	        event.stopPropagation();
+	        dropdownMenu.classList.toggle('show');
+	        dropdownMenu.classList.toggle('hide');
+	        dropdownMenu.style.display = dropdownMenu.classList.contains('show') ? 'block' : 'none';
+	    });
+	    document.addEventListener('click', function (event) {
+	        if (!powerButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+	            dropdownMenu.classList.add('hide');
+	            dropdownMenu.classList.remove('show');
+	            dropdownMenu.style.display = 'none';
+	        }
+	    });
+	    });
+    // Modal Functions
+    function filterTable() {
+    const startTimeInput = document.getElementById('start-time-filter').value;
+    const endTimeInput = document.getElementById('end-time-filter').value;
+    
+    const startDate = startTimeInput ? new Date(startTimeInput) : null;
+    const endDate = endTimeInput ? new Date(endTimeInput) : null;
+
+    const rows = document.querySelectorAll('#guards-tbody tr');
+    
+    rows.forEach(row => {
+        const startTime = new Date(row.querySelector('td:nth-child(4)').textContent);
+        const endTime = new Date(row.querySelector('td:nth-child(5)').textContent);
+
+        let isVisible = true;
+
+        if (startDate && startTime < startDate) {
+            isVisible = false;
+        }
+        if (endDate && endTime > endDate) {
+            isVisible = false;
+        }
+
+        row.style.display = isVisible ? '' : 'none';
+    });
+}
+
+    function closeModal(modal) {
+        modal.classList.add('hidden');
+    }
+
+    function openModal(modal) {
+        modal.classList.remove('hidden');
+    }
+
+    function editUser(element) {
+        const id = element.getAttribute('data-id');
+        const username = element.getAttribute('data-username');
+        pastUsername = username;
+        const userType = element.getAttribute('data-usertype');
+        const status = element.getAttribute('data-status');
+        const contactNumber = element.getAttribute('data-contact');
+        const email = element.getAttribute('data-email');
+        const programCode = element.getAttribute('data-program');
+        const fullname = element.getAttribute('data-fullname');
+
+        // Set values to modal input fields
+        document.getElementById('edit-username').value = username;
+        document.getElementById('edit-email').value = email;
+        document.getElementById('edit-number').value = contactNumber;
+        document.getElementById('edit-fullname').value = fullname;
+        document.getElementById('edit-userType').value = userType;
+        document.getElementById('edit-programCode').value = programCode;
+        document.getElementById('edit-status').value = status;
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-img').src = "/display?id=" + id;
+
+        openModal(editModal);
+    }
+    function deleteUser(element) {
+		Swal.fire({
+           title: 'Are you sure?',
+           text: 'This action cannot be undone!',
+           icon: 'warning',
+           showCancelButton: true,
+           confirmButtonText: 'Delete it'
+       }).then((result) => {
+		  	if (result.isConfirmed) {
+				console.log("userDeleteddd");
+				const id = element.getAttribute('data-id');
+				fetch('/hardDeleteUser?id=' + id,{
+					method: 'POST',
+					})
+		            .then(response => response.json())
+		            .then(data => {
+		                console.log('Success:', data);
+		                Swal.fire({
+		                    toast: true,
+		                    title: 'DELETE',
+		                    text: 'User Deleted successfully',
+		                    icon: 'success',
+		                    confirmButtonText: 'OK'
+		                }).then(() => {
+					        // Reload the page after the SweetAlert confirmation
+					        location.reload();
+					    });;
+		            }).catch(Error =>{
+		                Swal.fire({
+		                    toast: true,
+		                    title: 'DELETE',
+		                    text: `error deleting user: ${Error.message}`,
+		                    icon: 'error',
+		                    confirmButtonText: 'OK'
+		                })
+					});
+		}
+	});
+		
+	}
+    function viewUser(element) {
+        const id = element.getAttribute('data-id');
+        const username = element.getAttribute('data-username');
+        const userType = element.getAttribute('data-usertype');
+        const status = element.getAttribute('data-status');
+        const contactNumber = element.getAttribute('data-contact');
+        const email = element.getAttribute('data-email');
+        const programCode = element.getAttribute('data-program');
+        const fullname = element.getAttribute('data-fullname');
+		const timeStamp = element.getAttribute('data-timeStamp');
+        // Set values to modal input fields
+        var viewStatus = document.getElementById('view-status');
+        document.getElementById('view-username').textContent = username;
+        document.getElementById('view-email').textContent = email;
+        document.getElementById('view-number').textContent = contactNumber;
+        document.getElementById('view-fullname').textContent = fullname;
+        document.getElementById('view-userType').textContent = userType;
+        document.getElementById('view-programCode').textContent = programCode;
+        document.getElementById('view-timeStamp').textContent = timeStamp;
+        document.getElementById('view-img').src = "/display?id=" + id;
+		if (status === '1') {
+			viewStatus.textContent = 'enabled';
+			viewStatus.style.color = 'green';		
+		}else if (status === '0') {
+			viewStatus.textContent = 'disabled';
+			viewStatus.style.color = 'red';
+		}
+		
+        openModal(viewModal);
+    }
+
+    // Dropdown Toggle
+    function toggleDropdown(button) {
+        const dropdown = button.nextElementSibling;
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Validate Password Strength
+    function validatePassword() {
+        const password = passwordInput.value;
+        const passwordError = document.getElementById("passwordError");
+        const strongRegex = new RegExp("((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})|.{13,})");
+        const weakRegex = new RegExp("^(?=.{6,})");
+
+        if (strongRegex.test(password)) {
+            addUserButton.disabled = false;
+            passwordError.textContent = "Password strength: Strong ✔";
+            passwordError.classList.remove("text-red-500");
+            passwordError.classList.add("text-green-500");
+        } else if (weakRegex.test(password)) {
+            addUserButton.disabled = true;
+            passwordError.textContent = "Password strength: Weak";
+            passwordError.classList.remove("text-green-500");
+            passwordError.classList.add("text-red-500");
+        } else {
+            addUserButton.disabled = true;
+            passwordError.textContent = "Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters.";
+            passwordError.classList.remove("text-green-500");
+            passwordError.classList.add("text-red-500");
+        }
+    }
+	function previewImage(event) {
+        const currentImg = document.getElementById('current-img');
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImg.src = e.target.result; // Set the source of the image to the uploaded file
+            };
+            reader.readAsDataURL(file); // Read the file as a data URL
+        }
+    }
+    // Validate Phone Number
+    function validatePhoneNumber(phoneNumber) {
+        const regex = /^09\d{9}$/; // Regex pattern for Philippine mobile numbers
+        return regex.test(phoneNumber);
+    }
+
+    // Check Username Availability
+    function checkAddUsername() {
+		const addUsername = document.getElementById('username').value;
+		console.log("add username : "+addUsername);
+        fetch('/check-username?username=' + addUsername)
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+					console.log("ahehehe");
+                    addUserButton.disabled = true;
+                    usernameError.textContent = "Username is already taken.";
+                    usernameError.style.color= "red";
+
+                } else {
+                    usernameError.textContent = "";
+                    addUserButton.disabled = false;
+                }
+            });
+    }
+    function checkEditUsername() {
+		const editUsername = document.getElementById('edit-username').value;
+		var isCurrentUsername;
+		console.log("pastUsername: "+pastUsername);
+		console.log("edit username: "+editUsername);
+		if (editUsername === pastUsername){
+			isCurrentUsername= true;
+		}else{
+			isCurrentUsername= false;
+		}
+        fetch('/check-username?username=' + editUsername)
+            .then(response => response.json())
+            .then(data => {
+                if (data&&!isCurrentUsername) {
+                    editUserButton.disabled = true;
+                    editUsernameError.textContent = "Username is already taken.";
+                    editUsernameError.style.color= "red";
+
+                } else {
+                    editUsernameError.textContent = "";
+                    editUserButton.disabled = false;
+                }
+            });
+    }
+
+    // Check Program Code Availability
+    function checkProgramCode() {
+        const programCode = document.getElementById("programCode").value;
+        const programError = document.getElementById("programError");
+        const addButton = document.getElementById("submitButton");
+
+        fetch('/check-programCode?programCode=' + programCode)
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    programError.textContent = "An account with the following program code already exists";
+                    addButton.disabled = true;
+                } else {
+                    programError.textContent = "";
+                    addButton.disabled = false;
+                }
+            });
+    }
+
+    // Filter Users Table
+    $(document).ready(function() {
+        $("#search-input").on("keyup", function() {
+            const value = $(this).val().toLowerCase();
+            $("#users-table tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+    $(document).ready(function() {
+        $("#guards-search-input").on("keyup", function() {
+            const value = $(this).val().toLowerCase();
+            $("#guards-table tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+    $(document).ready(function() {
+        $("#activity-search-input").on("keyup", function() {
+            const value = $(this).val().toLowerCase();
+            $("#activity-table tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+    });
+  function fetchNotif() {
+        $.ajax({
+            url: '/getNotifications',
+            method: 'GET',
+            success: function(data) {
+                var hasNotif = data.hasNotif;
+
+            // Log or update the UI with the notification status
+            console.log("Has Notif Value: ", hasNotif);
+
+            if (hasNotif > 0) {
+                $('#hasNotif').css('display', 'block'); // Show the hasNotif div
+                $('#noNotif').css('display', 'none');   // Hide the noNotif div
+                $('#notifText').text(hasNotif);
+            } else {
+                $('#hasNotif').css('display', 'none');  // Hide the hasNotif div
+                $('#noNotif').css('display', 'block');  // Show the noNotif div
+            }
+            },
+            error: function(error) {
+                console.log("errorrrr");
+            }
+        });
+    }
+  
+
+    // Event Listeners
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Close modals when clicking outside of them
+        const tabButtons = document.querySelectorAll('.tab-button');
+const tabContents = document.querySelectorAll('.tab-content');
+
+// Function to activate a specific tab
+function activateTab(contentId, button) {
+    // Remove active class from all buttons
+    tabButtons.forEach(btn => btn.classList.remove('border-indigo-500', 'text-indigo-600'));
+    
+    // Hide all tab contents
+    tabContents.forEach(content => content.classList.add('hidden'));
+
+    // Show the corresponding tab content
+    document.getElementById(contentId).classList.remove('hidden');
+
+    // Add active class to the clicked button
+    button.classList.add('border-indigo-500', 'text-indigo-600');
+
+    // Save the current tab in sessionStorage
+    sessionStorage.setItem('activeTab', contentId);
+}
+
+// Add click event to each tab button
+tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        let contentId;
+        if (button.id === 'tab-1') {
+            contentId = 'content1';
+        } else if (button.id === 'tab-2') {
+            contentId = 'content2';
+        } else if (button.id === 'tab-3') {
+            contentId = 'content3';
+        }
+        
+        // Activate the clicked tab
+        activateTab(contentId, button);
+    });
+});
+
+// Check sessionStorage for the active tab on page load
+const activeTab = sessionStorage.getItem('activeTab');
+if (activeTab) {
+    // If an active tab is found, activate it
+    const activeButton = Array.from(tabButtons).find(btn => {
+        return btn.id === `tab-${activeTab.charAt(activeTab.length - 1)}`; // Extract tab number from content ID
+    });
+    if (activeButton) {
+        activateTab(activeTab, activeButton);
+    }
+} else {
+    // Activate Tab 1 on initial load
+    activateTab('content1', tabButtons[0]);
+}
+		
+        window.onclick = function(event) {
+            if (event.target === editModal) closeModal(editModal);
+            if (event.target === addModal) closeModal(addModal);
+            if (event.target === viewModal) closeModal(viewModal);
+        };
+
+        // Close modals when pressing the Escape key
+        document.onkeydown = function(event) {
+            if (event.key === "Escape") {
+                closeModal(editModal);
+                closeModal(addModal);
+                closeModal(viewModal);
+            }
+        };
+
+        // Phone number validation
+        number.onkeyup = function() {
+			
+            const numberValue = number.value;
+            
+            const numberError = document.getElementById("numberError");
+            
+            
+            if (!validatePhoneNumber(numberValue)) {
+                addUserButton.disabled = true;
+                
+                numberError.textContent = 'Contact number invalid';
+                
+                numberError.style.color = 'red';
+                
+            } else {
+                addUserButton.disabled = false;
+               
+                numberError.textContent = 'Contact number valid';
+                
+                numberError.style.color = 'green';
+                
+            }
+            
+        }
+        editNumber.onkeyup = function(){
+			const editNumberValue = editNumber.value;
+			const editNumberError = document.getElementById("edit-numberError");
+			if (!validatePhoneNumber(editNumberValue)){
+				editUserButton.disabled = true;
+				editNumberError.textContent = 'Contact number invalid';
+				editNumberError.style.color = 'red';
+			}else{
+				editNumberError.textContent = 'Contact number valid';
+				editNumberError.style.color = 'green'
+				editUserButton.disabled = false;
+			}
+		}
+		document.getElementById('username').onkeyup = function(){
+			checkAddUsername();
+		}
+		document.getElementById('edit-username').onkeyup = function(){
+			checkEditUsername();
+		}
+		// Toggle Sidebar
+        document.getElementById('sidebar-toggle').addEventListener('click', function () {
+            sidebar.classList.toggle('minimized');
+            sidebar.classList.toggle('expanded');
+            saveSidebarState();
+            updateLayout();
+        });
+        // Role change event listener
+        role.onchange = function() {
+            programCode.style.display = role.value === 'departmenthead' ? 'block' : 'none';
+        };
+        editRole.onchange = function() {
+            editProgramCode.style.display = editRole.value === 'departmenthead' ? 'block' : 'none';
+        };
+
+        // Add User Modal open
+        document.getElementById("add-user").onclick = function() {
+            openModal(addModal);
+        };
+
+        // Add User Form submission
+        addUserForm.onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData(addUserForm);
+            fetch('/addUsers', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                Swal.fire({
+                    toast: true,
+                    title: 'ADD USER',
+                    text: 'User added successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+			        // Reload the page after the SweetAlert confirmation
+			        location.reload();
+			    });;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    toast: true,
+                    title: 'ERROR ADD USER!',
+                    text: `Error adding user: ${error.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        };
+        // Edit User Form submission
+        editUserForm.onsubmit = function(event) {
+            event.preventDefault();
+            const formData = new FormData(editUserForm);
+           for (const [key, value] of formData.entries()) {
+			    console.log(key, value);
+			}
+            fetch('/updateUser', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                Swal.fire({
+                    toast: true,
+                    title: 'EDIT USER',
+                    text: 'User Edited successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+			        // Reload the page after the SweetAlert confirmation
+			        location.reload();
+			    });;
+			            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    toast: true,
+                    title: 'ERROR EDITING USER!',
+                    text: `Error adding user: ${error.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        };
+ 
+        fetchNotif()
+    });
+    
+</script>
+
+</body>
+</html>
