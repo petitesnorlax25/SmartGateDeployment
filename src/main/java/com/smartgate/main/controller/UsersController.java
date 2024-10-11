@@ -110,14 +110,15 @@ public class UsersController {
     }
     @GetMapping("/app/startingpoint/getSuperRegister")
     public String getSuperRegister(Model model) {
-    	List<UserEntity> getUser = userRepository.findByUserType("superadmin");
-    	if (getUser == null) {
-    		return "registration";
-    	}else {
-    		return "redirect:/";
-    	}
-    	
+        long userCount = userRepository.count(); // Count the number of users in the repository
+
+        if (userCount == 0) { // Check if there are no users
+            return "registration"; // Redirect to the registration page
+        } else {
+            return "redirect:/"; // Change to the appropriate view if users exist
+        }
     }
+
     @PostMapping("/app/startingpoint/superAdminRegister")
     public String sadminRegister(HttpServletRequest request, Model model, HttpSession session,
     							@RequestParam("image")MultipartFile file) throws IOException, SQLException {
